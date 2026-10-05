@@ -1,0 +1,7 @@
+SQLAlchemy>=2.0
+alembic>=1.13
+bcrypt>=4.1
+groq>=1.7
+PySide6>=6.6
+pytest>=8
+pytest-qt>=4.4

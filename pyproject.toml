@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alquiler-equipos"
+version = "0.1.0"
+description = "Sistema Inteligente de Alquiler de Equipos (escritorio)"
+requires-python = ">=3.11"
+dependencies = [
+    "SQLAlchemy>=2.0",
+    "alembic>=1.13",
+    "bcrypt>=4.1",
+    "groq>=1.7",
+    "PySide6>=6.6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-qt>=4.4"]
+
+[tool.setuptools.packages.find]
+include = ["alquiler*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
