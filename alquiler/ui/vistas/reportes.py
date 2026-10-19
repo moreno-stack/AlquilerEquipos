@@ -35,7 +35,7 @@ from alquiler.ui.logica import reportes
 from alquiler.ui.logica.contexto import Contexto
 from alquiler.ui.logica.formato import pesos
 
-SERIE = QColor(tema.PALETA["acero"])  # contraste 6,9:1 sobre blanco; el ámbar se reserva a la marca
+SERIE = QColor(tema.PALETA["acento"])  # cian de la marca sobre la superficie oscura
 TINTA_SECUNDARIA = QColor(tema.PALETA["texto_secundario"])
 REJILLA = QColor(tema.PALETA["rejilla"])
 

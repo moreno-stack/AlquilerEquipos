@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Componentes · Alquiler de Equipos</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* Regla del sistema: aquí no se escribe ningún color; todo sale de tokens.css. */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; color: var(--color-texto);
+  background:
+    radial-gradient(900px 620px at 92% -8%, var(--color-aurora-violeta), transparent 62%),
+    radial-gradient(760px 560px at 28% -12%, var(--color-aurora-cian), transparent 60%),
+    var(--color-fondo);
+  background-attachment: fixed;
+  font-family: var(--fuente-texto); font-size: var(--texto-base); line-height: var(--interlineado-normal);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: var(--fuente-titulos); line-height: var(--interlineado-ajustado); margin: 0; }
+p { margin: 0; }
+svg.ic { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2;
+         stroke-linecap: round; stroke-linejoin: round; }
+:focus-visible { outline: none; box-shadow: var(--sombra-foco); }
+
+/* ── Estructura de la página ─────────────────────────────────────────── */
+.layout { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+.nav {
+  position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--color-fondo-hundido);
+  background-image: radial-gradient(260px 220px at 0% 0%, var(--color-aurora-cian), transparent 70%);
+  border-right: 1px solid var(--color-borde); padding: var(--espacio-6) var(--espacio-3);
+}
+.marca { display: flex; align-items: center; gap: var(--espacio-3); padding: 0 var(--espacio-3) var(--espacio-6); }
+.marca__logo {
+  width: 34px; height: 34px; border-radius: var(--radio-md); background: var(--degradado-marca);
+  color: var(--color-sobre-acento); display: grid; place-items: center;
+  box-shadow: 0 0 0 6px var(--color-acento-halo);
+}
+.marca__nombre { font-family: var(--fuente-titulos); font-weight: var(--peso-fuerte); font-size: var(--texto-md); }
+.marca__sub { font-size: var(--texto-xs); color: var(--color-texto-secundario); }
+.nav__grupo { font-size: var(--texto-xs); color: var(--color-texto-deshabilitado); text-transform: uppercase;
+              letter-spacing: .08em; padding: var(--espacio-4) var(--espacio-3) var(--espacio-2); }
+.nav a {
+  display: flex; align-items: center; gap: var(--espacio-3); padding: var(--espacio-2) var(--espacio-3);
+  border-radius: var(--radio-md); color: var(--color-texto-secundario); text-decoration: none;
+  transition: background var(--duracion-rapida) var(--curva-salida), color var(--duracion-rapida);
+}
+.nav a:hover { background: var(--color-superficie); color: var(--color-texto); }
+.nav a.activo { background: var(--degradado-marca); color: var(--color-sobre-acento); font-weight: var(--peso-medio);
+                box-shadow: 0 6px 20px var(--color-aurora-cian); }
+.contenido { padding: var(--espacio-10) var(--espacio-12) var(--espacio-12); max-width: 1180px; }
+
+.portada {
+  position: relative; overflow: hidden; border-radius: var(--radio-lg); padding: var(--espacio-10);
+  background: radial-gradient(70% 120% at 100% 0%, var(--color-aurora-violeta), transparent 60%),
+              radial-gradient(60% 100% at 0% 100%, var(--color-aurora-cian), transparent 60%),
+              var(--color-superficie);
+  border: 1px solid var(--color-borde); margin-bottom: var(--espacio-12);
+}
+.portada__ceja { display: inline-flex; align-items: center; gap: var(--espacio-2); font-size: var(--texto-xs);
+                 color: var(--color-acento-texto); background: var(--color-acento-suave);
+                 border-radius: var(--radio-pildora); padding: var(--espacio-1) var(--espacio-3); }
+.portada h1 { font-size: 44px; margin: var(--espacio-4) 0 var(--espacio-3); letter-spacing: -.02em; }
+.degradado-texto { background: var(--degradado-marca); -webkit-background-clip: text; background-clip: text;
+                   color: transparent; }
+.portada p { color: var(--color-texto-secundario); max-width: 620px; font-size: var(--texto-md); }
+.portada__datos { display: flex; gap: var(--espacio-8); margin-top: var(--espacio-8); }
+.portada__dato b { display: block; font-family: var(--fuente-titulos); font-size: var(--texto-xl); }
+.portada__dato span { font-size: var(--texto-xs); color: var(--color-texto-secundario); }
+
+.seccion { margin-bottom: var(--espacio-12); scroll-margin-top: var(--espacio-6); }
+.seccion__cab { display: flex; align-items: baseline; gap: var(--espacio-3); margin-bottom: var(--espacio-2); }
+.seccion__num { font-family: var(--fuente-titulos); font-weight: var(--peso-fuerte); background: var(--degradado-marca);
+                -webkit-background-clip: text; background-clip: text; color: transparent; }
+.seccion h2 { font-size: var(--texto-xl); }
+.seccion__desc { color: var(--color-texto-secundario); margin-bottom: var(--espacio-5); max-width: 720px; }
+.lienzo { background: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio-lg);
+          padding: var(--espacio-6); }
+.lienzo + .lienzo { margin-top: var(--espacio-4); }
+.rejilla-2 > .lienzo, .rejilla-3 > .lienzo { margin-top: 0; }
+.lienzo__titulo { font-size: var(--texto-xs); color: var(--color-texto-secundario); text-transform: uppercase;
+                  letter-spacing: .08em; margin-bottom: var(--espacio-4); }
+.fila { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espacio-3); }
+.rejilla-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--espacio-4); }
+.rejilla-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--espacio-4); }
+.rejilla-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--espacio-3); }
+
+/* ── Colores ─────────────────────────────────────────────────────────── */
+.muestra { border-radius: var(--radio-lg); overflow: hidden; border: 1px solid var(--color-borde);
+           background: var(--color-fondo); }
+.muestra__color { height: 72px; }
+.muestra__info { padding: var(--espacio-3); }
+.muestra__info b { display: block; font-size: var(--texto-sm); }
+.muestra__info code { font-size: var(--texto-xs); color: var(--color-texto-secundario); }
+
+/* ── Tipografía ──────────────────────────────────────────────────────── */
+.tipo { display: grid; grid-template-columns: 120px minmax(0, 1fr); align-items: baseline; gap: var(--espacio-4);
+        padding: var(--espacio-3) 0; border-bottom: 1px solid var(--color-borde); }
+.tipo:last-child { border-bottom: none; }
+.tipo code { font-size: var(--texto-xs); color: var(--color-texto-secundario); }
+
+/* ── Botones ─────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--espacio-2);
+  min-height: 40px; padding: 0 var(--espacio-4); border-radius: var(--radio-md);
+  font: var(--peso-medio) var(--texto-base) var(--fuente-texto); cursor: pointer;
+  border: 1px solid var(--color-borde-fuerte); background: var(--color-superficie-alta); color: var(--color-texto);
+  transition: transform var(--duracion-rapida) var(--curva-salida), background var(--duracion-rapida),
+              border-color var(--duracion-rapida), color var(--duracion-rapida);
+}
+.btn:hover { background: var(--color-borde); border-color: var(--color-texto-secundario); }
+.btn:active { transform: translateY(1px) scale(.98); }
+.btn--primario { background: var(--degradado-marca); border-color: transparent; color: var(--color-sobre-acento);
+                 font-weight: var(--peso-fuerte); box-shadow: 0 6px 18px var(--color-aurora-cian); }
+.btn--primario:hover { background: var(--degradado-marca-hover); border-color: transparent;
+                       box-shadow: 0 8px 26px var(--color-aurora-violeta), 0 0 0 4px var(--color-acento-halo); }
+.btn--fantasma { background: transparent; border-color: transparent; color: var(--color-texto-secundario); }
+.btn--fantasma:hover { background: var(--color-superficie-alta); color: var(--color-texto); border-color: transparent; }
+.btn--peligro { background: transparent; border-color: var(--color-peligro); color: var(--color-peligro); }
+.btn--peligro:hover { background: var(--color-peligro-fuerte); border-color: var(--color-peligro-fuerte); color: var(--color-blanco); }
+.btn--sm { min-height: 32px; padding: 0 var(--espacio-3); font-size: var(--texto-sm); }
+.btn--lg { min-height: 48px; padding: 0 var(--espacio-6); font-size: var(--texto-md); }
+.btn--icono { width: 40px; padding: 0; }
+.btn[disabled] { cursor: not-allowed; opacity: .45; transform: none; box-shadow: none; }
+.giro { animation: giro .8s linear infinite; }
+@keyframes giro { to { transform: rotate(360deg); } }
+
+/* ── Insignias de estado ─────────────────────────────────────────────── */
+.pildora { display: inline-flex; align-items: center; gap: 6px; border-radius: var(--radio-pildora);
+           padding: 3px var(--espacio-3) 3px var(--espacio-2); font-size: var(--texto-sm); font-weight: var(--peso-medio);
+           white-space: nowrap; }
+.pildora svg.ic { width: 14px; height: 14px; }
+.p-disponible { background: var(--estado-disponible-fondo); color: var(--estado-disponible-texto); }
+.p-alquilado { background: var(--estado-alquilado-fondo); color: var(--estado-alquilado-texto); }
+.p-reservado { background: var(--estado-reservado-fondo); color: var(--estado-reservado-texto); }
+.p-mantenimiento { background: var(--estado-mantenimiento-fondo); color: var(--estado-mantenimiento-texto); }
+.p-fuera { background: var(--estado-fuera-fondo); color: var(--estado-fuera-texto); }
+.p-marca { background: var(--color-acento-suave); color: var(--color-acento-texto); }
+
+/* ── Tarjetas ────────────────────────────────────────────────────────── */
+.tarjeta {
+  position: relative; background: var(--color-superficie); border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg); padding: var(--espacio-5);
+  box-shadow: inset 0 1px 0 var(--color-brillo);
+  transition: transform var(--duracion-base) var(--curva-salida), border-color var(--duracion-base);
+}
+a.tarjeta, .tarjeta--interactiva { cursor: pointer; text-decoration: none; color: inherit; }
+.tarjeta--interactiva:hover { transform: translateY(-3px); border-color: var(--color-acento);
+                              box-shadow: inset 0 1px 0 var(--color-brillo), 0 14px 34px var(--color-aurora-cian); }
+.kpi__cab { display: flex; justify-content: space-between; align-items: center; color: var(--color-texto-secundario);
+            font-size: var(--texto-sm); }
+.kpi__icono { width: 32px; height: 32px; border-radius: var(--radio-md); display: grid; place-items: center; }
+.kpi__valor { font-family: var(--fuente-titulos); font-size: var(--texto-2xl); font-weight: var(--peso-fuerte);
+              margin: var(--espacio-2) 0 var(--espacio-1); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.kpi__pie { display: flex; align-items: center; gap: var(--espacio-2); font-size: var(--texto-xs); color: var(--color-texto-secundario); }
+.kpi__linea { position: absolute; left: var(--espacio-5); right: var(--espacio-5); bottom: 0; height: 3px;
+              border-radius: 2px 2px 0 0; }
+.sube { color: var(--estado-disponible-fuerte); display: inline-flex; align-items: center; gap: 2px; font-weight: var(--peso-medio); }
+.baja { color: var(--estado-fuera-fuerte); display: inline-flex; align-items: center; gap: 2px; font-weight: var(--peso-medio); }
+.equipo { display: flex; flex-direction: column; gap: var(--espacio-3); }
+.equipo__imagen { height: 120px; border-radius: var(--radio-md); display: grid; place-items: center;
+                  background: radial-gradient(80% 90% at 30% 20%, var(--color-acento-halo), transparent 70%),
+                              var(--color-superficie-alta); color: var(--color-acento); }
+.equipo__imagen svg.ic { width: 44px; height: 44px; stroke-width: 1.5; }
+.equipo__cab { display: flex; justify-content: space-between; align-items: start; gap: var(--espacio-2); }
+.equipo__cab h3 { font-size: var(--texto-md); }
+.equipo__cod { font-size: var(--texto-xs); color: var(--color-texto-secundario); }
+.equipo__pie { display: flex; justify-content: space-between; align-items: center; padding-top: var(--espacio-3);
+               border-top: 1px solid var(--color-borde); }
+.precio { font-family: var(--fuente-titulos); font-weight: var(--peso-fuerte); font-size: var(--texto-lg); }
+.precio small { font-size: var(--texto-xs); color: var(--color-texto-secundario); font-weight: var(--peso-normal); }
+.ia { border-color: var(--color-acento-suave);
+      background: radial-gradient(90% 70% at 100% 0%, var(--color-aurora-violeta), transparent 65%),
+                  linear-gradient(180deg, var(--color-acento-halo), transparent 45%), var(--color-superficie); }
+.ia h3 { font-size: var(--texto-md); margin: var(--espacio-3) 0 var(--espacio-2); }
+.ia p { color: var(--color-texto-secundario); font-size: var(--texto-sm); }
+.medidor { height: 8px; border-radius: var(--radio-pildora); background: var(--color-superficie-alta); overflow: hidden;
+           margin: var(--espacio-4) 0 var(--espacio-2); }
+.medidor > div { height: 100%; border-radius: inherit; background: var(--degradado-marca); transform-origin: left; }
+.nota { font-size: var(--texto-xs); color: var(--color-texto-secundario); font-style: italic; }
+
+/* ── Formularios ─────────────────────────────────────────────────────── */
+.campo { display: flex; flex-direction: column; gap: var(--espacio-2); }
+.campo label { font-size: var(--texto-sm); font-weight: var(--peso-medio); }
+.campo .ayuda { font-size: var(--texto-xs); color: var(--color-texto-secundario); }
+.control {
+  display: flex; align-items: center; gap: var(--espacio-2); min-height: 42px; padding: 0 var(--espacio-3);
+  background: var(--color-fondo); border: 1px solid var(--color-borde-fuerte); border-radius: var(--radio-md);
+  color: var(--color-texto-secundario); transition: border-color var(--duracion-rapida), box-shadow var(--duracion-rapida);
+}
+.control:focus-within { border-color: var(--color-acento); box-shadow: var(--sombra-foco); }
+.control input, .control select, .control textarea {
+  flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--color-texto);
+  font: inherit; padding: var(--espacio-2) 0;
+}
+.control input::placeholder { color: var(--color-texto-deshabilitado); }
+.control select { appearance: none; cursor: pointer; }
+.control select option { background: var(--color-superficie); color: var(--color-texto); }
+.control--area { align-items: flex-start; padding-top: var(--espacio-2); }
+.control textarea { resize: vertical; min-height: 72px; }
+.campo--error .control { border-color: var(--color-peligro); }
+.campo--error .ayuda { color: var(--color-peligro); display: flex; align-items: center; gap: 6px; }
+.campo--error .ayuda svg.ic { width: 14px; height: 14px; }
+.campo--deshabilitado .control { opacity: .5; }
+.resumen-costo { display: flex; justify-content: space-between; align-items: center; padding: var(--espacio-4);
+                 border-radius: var(--radio-md); background: var(--color-acento-suave); color: var(--color-acento-texto);
+                 border: 1px solid var(--color-acento-halo); }
+.resumen-costo b { font-family: var(--fuente-titulos); font-size: var(--texto-lg); }
+.interruptor { display: inline-flex; align-items: center; gap: var(--espacio-3); cursor: pointer; font-size: var(--texto-sm); }
+.interruptor input { position: absolute; opacity: 0; }
+.interruptor__pista { width: 40px; height: 22px; border-radius: var(--radio-pildora); background: var(--color-borde-fuerte);
+                      position: relative; transition: background var(--duracion-base); }
+.interruptor__pista::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+                             border-radius: 50%; background: var(--color-texto);
+                             transition: transform var(--duracion-base) var(--curva-salida); }
+.interruptor input:checked + .interruptor__pista { background: var(--degradado-marca); }
+.interruptor input:checked + .interruptor__pista::after { transform: translateX(18px); background: var(--color-sobre-acento); }
+.interruptor input:focus-visible + .interruptor__pista { box-shadow: var(--sombra-foco); }
+.acciones { display: flex; justify-content: flex-end; gap: var(--espacio-3); padding-top: var(--espacio-4);
+            border-top: 1px solid var(--color-borde); }
+
+/* ── Listas y tablas ─────────────────────────────────────────────────── */
+.barra-tabla { display: flex; justify-content: space-between; align-items: center; gap: var(--espacio-3);
+               margin-bottom: var(--espacio-4); }
+.tabla { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--texto-sm); }
+.tabla th { text-align: left; font-weight: var(--peso-medio); color: var(--color-texto-secundario);
+            padding: var(--espacio-3); border-bottom: 1px solid var(--color-borde); font-size: var(--texto-xs);
+            text-transform: uppercase; letter-spacing: .06em; }
+.tabla td { padding: var(--espacio-3); border-bottom: 1px solid var(--color-borde); }
+.tabla tbody tr { transition: background var(--duracion-rapida); }
+.tabla tbody tr:hover { background: var(--color-superficie-alta); }
+.tabla tbody tr.seleccionada { background: var(--color-seleccion); color: var(--color-blanco); }
+.tabla tbody tr.seleccionada td { border-bottom-color: transparent; }
+.tabla tr:last-child td { border-bottom: none; }
+.num, .tabla th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.equipo-celda { display: flex; align-items: center; gap: var(--espacio-3); }
+.equipo-celda__icono { width: 34px; height: 34px; border-radius: var(--radio-md); background: var(--color-superficie-alta);
+                       display: grid; place-items: center; color: var(--color-acento); }
+.equipo-celda small { display: block; color: var(--color-texto-secundario); font-size: var(--texto-xs); }
+tr.seleccionada .equipo-celda small, tr.seleccionada .equipo-celda__icono { color: var(--color-blanco); }
+.lista { display: flex; flex-direction: column; }
+.fila-lista { display: flex; align-items: center; gap: var(--espacio-3); padding: var(--espacio-3);
+              border-radius: var(--radio-md); transition: background var(--duracion-rapida); }
+.fila-lista:hover { background: var(--color-superficie-alta); }
+.fila-lista + .fila-lista { border-top: 1px solid var(--color-borde); }
+.avatar { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none;
+          font-weight: var(--peso-fuerte); font-size: var(--texto-sm); background: var(--degradado-marca);
+          color: var(--color-sobre-acento); }
+.fila-lista__texto { flex: 1; min-width: 0; }
+.fila-lista__texto b { display: block; font-weight: var(--peso-medio); }
+.fila-lista__texto span { font-size: var(--texto-xs); color: var(--color-texto-secundario); }
+.fila-lista__monto { text-align: right; font-variant-numeric: tabular-nums; }
+.fila-lista__monto small { display: block; font-size: var(--texto-xs); color: var(--color-texto-secundario); }
+
+/* ── Estados: cargando, vacío y error ────────────────────────────────── */
+.estado { min-height: 300px; display: flex; flex-direction: column; }
+.esqueleto { position: relative; overflow: hidden; background: var(--color-superficie-alta); border-radius: var(--radio-sm); }
+.esqueleto::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+                    background: linear-gradient(90deg, transparent, var(--color-brillo), transparent);
+                    animation: barrido 1.4s var(--curva-entrada-salida) infinite; }
+@keyframes barrido { to { transform: translateX(100%); } }
+.esq-fila { display: flex; align-items: center; gap: var(--espacio-3); padding: var(--espacio-3) 0; }
+.esq-circulo { width: 38px; height: 38px; border-radius: 50%; flex: none; }
+.vacio, .error { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                 text-align: center; gap: var(--espacio-3); padding: var(--espacio-6); }
+.vacio__ilustracion, .error__ilustracion { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; }
+.vacio__ilustracion { background: var(--color-superficie-alta); color: var(--color-texto-secundario);
+                      box-shadow: 0 0 0 10px var(--color-brillo); }
+.error__ilustracion { background: var(--estado-fuera-fondo); color: var(--estado-fuera-texto);
+                      box-shadow: 0 0 0 10px var(--color-brillo); }
+.vacio__ilustracion svg.ic, .error__ilustracion svg.ic { width: 32px; height: 32px; }
+.vacio h3, .error h3 { font-size: var(--texto-md); }
+.vacio p, .error p { font-size: var(--texto-sm); color: var(--color-texto-secundario); max-width: 260px; }
+.cargando-texto { display: flex; align-items: center; gap: var(--espacio-2); font-size: var(--texto-sm);
+                  color: var(--color-texto-secundario); margin-top: auto; padding-top: var(--espacio-3); }
+
+/* ── Avisos ──────────────────────────────────────────────────────────── */
+.aviso { display: flex; gap: var(--espacio-3); align-items: flex-start; padding: var(--espacio-4);
+         border-radius: var(--radio-md); border: 1px solid var(--color-borde); background: var(--color-fondo); }
+.aviso__icono { width: 30px; height: 30px; border-radius: var(--radio-md); display: grid; place-items: center; flex: none; }
+.aviso b { display: block; margin-bottom: 2px; }
+.aviso p { font-size: var(--texto-sm); color: var(--color-texto-secundario); }
+.aviso--exito .aviso__icono { background: var(--estado-disponible-fondo); color: var(--estado-disponible-texto); }
+.aviso--info .aviso__icono { background: var(--estado-alquilado-fondo); color: var(--estado-alquilado-texto); }
+.aviso--cuidado .aviso__icono { background: var(--estado-mantenimiento-fondo); color: var(--estado-mantenimiento-texto); }
+.aviso--error .aviso__icono { background: var(--estado-fuera-fondo); color: var(--estado-fuera-texto); }
+
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto::after, .giro { animation: none; }
+}
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; }
+  .nav { display: none; }
+  .contenido { padding: var(--espacio-6) var(--espacio-4); }
+  .rejilla-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rejilla-3, .rejilla-2 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<!-- Íconos de trazo (24×24, trazo actual): los mismos que usa la app de escritorio. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-inicio" viewBox="0 0 24 24"><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/></symbol>
+  <symbol id="i-equipos" viewBox="0 0 24 24"><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5"/><path d="M12 12l8 -4.5"/><path d="M12 12l0 9"/><path d="M12 12l-8 -4.5"/></symbol>
+  <symbol id="i-llave" viewBox="0 0 24 24"><path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5"/></symbol>
+  <symbol id="i-clientes" viewBox="0 0 24 24"><path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/></symbol>
+  <symbol id="i-documento" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/></symbol>
+  <symbol id="i-calendario" viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/></symbol>
+  <symbol id="i-grafico" viewBox="0 0 24 24"><path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/></symbol>
+  <symbol id="i-bombilla" viewBox="0 0 24 24"><path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7"/><path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3"/><path d="M9.7 17l4.6 0"/></symbol>
+  <symbol id="i-paleta" viewBox="0 0 24 24"><path d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25"/><path d="M8.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M12.5 7.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M16.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/></symbol>
+  <symbol id="i-letra" viewBox="0 0 24 24"><path d="M4 20l3 0"/><path d="M14 20l7 0"/><path d="M6.9 15l6.9 0"/><path d="M10.2 6.3l5.8 13.7"/><path d="M5 20l6 -16l2 0l7 16"/></symbol>
+  <symbol id="i-cursor" viewBox="0 0 24 24"><path d="M3 3l7.07 16.97l2.51 -7.39l7.39 -2.51l-16.97 -7.07z"/><path d="M13 13l6 6"/></symbol>
+  <symbol id="i-tarjeta" viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"/><path d="M3 9h18"/></symbol>
+  <symbol id="i-formulario" viewBox="0 0 24 24"><path d="M4 4h16v4h-16z"/><path d="M4 12h16v4h-16z"/><path d="M4 20h8"/></symbol>
+  <symbol id="i-lista" viewBox="0 0 24 24"><path d="M9 6l11 0"/><path d="M9 12l11 0"/><path d="M9 18l11 0"/><path d="M5 6l0 .01"/><path d="M5 12l0 .01"/><path d="M5 18l0 .01"/></symbol>
+  <symbol id="i-capas" viewBox="0 0 24 24"><path d="M12 4l-8 4l8 4l8 -4l-8 -4"/><path d="M4 12l8 4l8 -4"/><path d="M4 16l8 4l8 -4"/></symbol>
+  <symbol id="i-campana" viewBox="0 0 24 24"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></symbol>
+  <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5l0 14"/><path d="M5 12l14 0"/></symbol>
+  <symbol id="i-editar" viewBox="0 0 24 24"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/></symbol>
+  <symbol id="i-basura" viewBox="0 0 24 24"><path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></symbol>
+  <symbol id="i-buscar" viewBox="0 0 24 24"><path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></symbol>
+  <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M17 7l-10 10"/><path d="M8 7l9 0l0 9"/></symbol>
+  <symbol id="i-flecha-abajo" viewBox="0 0 24 24"><path d="M7 7l10 10"/><path d="M17 8l0 9l-9 0"/></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 7v5l3 3"/></symbol>
+  <symbol id="i-alerta" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"/><path d="M12 16h.01"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 9h.01"/><path d="M11 12h1v4h1"/></symbol>
+  <symbol id="i-recargar" viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></symbol>
+  <symbol id="i-bandeja" viewBox="0 0 24 24"><path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M4 13h3l3 3h4l3 -3h3"/></symbol>
+  <symbol id="i-girador" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6l6 -6"/></symbol>
+  <symbol id="i-dinero" viewBox="0 0 24 24"><path d="M16.7 8a3 3 0 0 0 -2.7 -2h-4a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6h-4a3 3 0 0 1 -2.7 -2"/><path d="M12 3v3m0 12v3"/></symbol>
+</svg>
+
+<div class="layout">
+  <nav class="nav" aria-label="Secciones de la guía">
+    <div class="marca">
+      <div class="marca__logo"><svg class="ic"><use href="#i-equipos"/></svg></div>
+      <div><div class="marca__nombre">Alquiler de Equipos</div><div class="marca__sub">Sistema de diseño · v1</div></div>
+    </div>
+    <div class="nav__grupo">Fundamentos</div>
+    <a href="#colores" class="activo"><svg class="ic"><use href="#i-paleta"/></svg>Colores</a>
+    <a href="#tipografia"><svg class="ic"><use href="#i-letra"/></svg>Tipografía</a>
+    <div class="nav__grupo">Componentes</div>
+    <a href="#botones"><svg class="ic"><use href="#i-cursor"/></svg>Botones</a>
+    <a href="#estados-equipo"><svg class="ic"><use href="#i-capas"/></svg>Estados de equipo</a>
+    <a href="#tarjetas"><svg class="ic"><use href="#i-tarjeta"/></svg>Tarjetas</a>
+    <a href="#formularios"><svg class="ic"><use href="#i-formulario"/></svg>Formularios</a>
+    <a href="#listas"><svg class="ic"><use href="#i-lista"/></svg>Listas y tablas</a>
+    <div class="nav__grupo">Patrones</div>
+    <a href="#estados"><svg class="ic"><use href="#i-reloj"/></svg>Cargando · vacío · error</a>
+    <a href="#avisos"><svg class="ic"><use href="#i-campana"/></svg>Avisos</a>
+  </nav>
+
+  <main class="contenido">
+    <header class="portada">
+      <span class="portada__ceja"><svg class="ic" style="width:14px;height:14px"><use href="#i-paleta"/></svg>Pizarra y cian · v1</span>
+      <h1>Guía de <span class="degradado-texto">componentes</span></h1>
+      <p>Todas las piezas de la interfaz en un solo lugar, construidas solo con los tokens de
+         <code>tokens.css</code>. Revisa aquí y pide los cambios antes de construir las pantallas.</p>
+      <div class="portada__datos">
+        <div class="portada__dato"><b>9</b><span>familias de componentes</span></div>
+        <div class="portada__dato"><b>5</b><span>estados de equipo</span></div>
+        <div class="portada__dato"><b>0</b><span>colores escritos a mano</span></div>
+      </div>
+    </header>
+
+    <!-- 01 · COLORES -->
+    <section class="seccion" id="colores">
+      <div class="seccion__cab"><span class="seccion__num">01</span><h2>Colores</h2></div>
+      <p class="seccion__desc">Capas de azul pizarra para la profundidad y un único acento cian para lo que se toca o está activo. El valor de cada muestra se lee en vivo de <code>tokens.css</code>.</p>
+      <div class="rejilla-4" id="muestras"></div>
+    </section>
+
+    <!-- 02 · TIPOGRAFÍA -->
+    <section class="seccion" id="tipografia">
+      <div class="seccion__cab"><span class="seccion__num">02</span><h2>Tipografía</h2></div>
+      <p class="seccion__desc">Manrope para títulos y cifras; Inter para el texto. Las cifras usan números tabulares para alinearse en columnas.</p>
+      <div class="lienzo">
+        <div class="tipo"><code>2xl · 32</code><span style="font-family:var(--fuente-titulos);font-size:var(--texto-2xl);font-weight:var(--peso-fuerte)">$4.250.000</span></div>
+        <div class="tipo"><code>xl · 24</code><span style="font-family:var(--fuente-titulos);font-size:var(--texto-xl);font-weight:var(--peso-medio)">Equipos disponibles</span></div>
+        <div class="tipo"><code>lg · 20</code><span style="font-family:var(--fuente-titulos);font-size:var(--texto-lg);font-weight:var(--peso-medio)">Estado de la flota</span></div>
+        <div class="tipo"><code>md · 16</code><span style="font-size:var(--texto-md);font-weight:var(--peso-medio)">Taladro percutor industrial</span></div>
+        <div class="tipo"><code>base · 14</code><span>Devolución prevista para el viernes; el saldo pendiente se cobra al entregar el equipo.</span></div>
+        <div class="tipo"><code>sm · 13</code><span style="font-size:var(--texto-sm);color:var(--color-texto-secundario)">Etiquetas de campos y encabezados de tabla</span></div>
+        <div class="tipo"><code>xs · 12</code><span style="font-size:var(--texto-xs);color:var(--color-texto-secundario)">Estimación basada en el historial registrado; no es una certeza.</span></div>
+      </div>
+    </section>
+
+    <!-- 03 · BOTONES -->
+    <section class="seccion" id="botones">
+      <div class="seccion__cab"><span class="seccion__num">03</span><h2>Botones</h2></div>
+      <p class="seccion__desc">Un solo botón primario por barra de acciones. Las acciones destructivas usan el estilo de peligro, nunca el acento.</p>
+      <div class="lienzo">
+        <div class="lienzo__titulo">Variantes</div>
+        <div class="fila">
+          <button class="btn btn--primario"><svg class="ic"><use href="#i-mas"/></svg>Nuevo alquiler</button>
+          <button class="btn"><svg class="ic"><use href="#i-editar"/></svg>Editar</button>
+          <button class="btn btn--fantasma">Cancelar</button>
+          <button class="btn btn--peligro"><svg class="ic"><use href="#i-basura"/></svg>Eliminar</button>
+          <button class="btn btn--icono" aria-label="Buscar"><svg class="ic"><use href="#i-buscar"/></svg></button>
+        </div>
+      </div>
+      <div class="rejilla-2" style="margin-top:var(--espacio-4)">
+        <div class="lienzo">
+          <div class="lienzo__titulo">Tamaños</div>
+          <div class="fila">
+            <button class="btn btn--primario btn--sm">Pequeño</button>
+            <button class="btn btn--primario">Mediano</button>
+            <button class="btn btn--primario btn--lg">Grande</button>
+          </div>
+        </div>
+        <div class="lienzo">
+          <div class="lienzo__titulo">Estados</div>
+          <div class="fila">
+            <button class="btn btn--primario" disabled><svg class="ic giro"><use href="#i-girador"/></svg>Guardando…</button>
+            <button class="btn" disabled>Deshabilitado</button>
+            <button class="btn btn--primario"><svg class="ic"><use href="#i-check"/></svg>Guardado</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 · ESTADOS DE EQUIPO -->
+    <section class="seccion" id="estados-equipo">
+      <div class="seccion__cab"><span class="seccion__num">04</span><h2>Estados de equipo</h2></div>
+      <p class="seccion__desc">Cada estado lleva color, ícono y texto: el color nunca es la única pista.</p>
+      <div class="lienzo">
+        <div class="fila">
+          <span class="pildora p-disponible"><svg class="ic"><use href="#i-check"/></svg>Disponible</span>
+          <span class="pildora p-alquilado"><svg class="ic"><use href="#i-flecha"/></svg>Alquilado</span>
+          <span class="pildora p-reservado"><svg class="ic"><use href="#i-reloj"/></svg>Reservado</span>
+          <span class="pildora p-mantenimiento"><svg class="ic"><use href="#i-llave"/></svg>En mantenimiento</span>
+          <span class="pildora p-fuera"><svg class="ic"><use href="#i-x"/></svg>Fuera de servicio</span>
+          <span class="pildora p-marca"><svg class="ic"><use href="#i-bombilla"/></svg>Estimación de IA</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 · TARJETAS -->
+    <section class="seccion" id="tarjetas">
+      <div class="seccion__cab"><span class="seccion__num">05</span><h2>Tarjetas</h2></div>
+      <p class="seccion__desc">Indicadores navegables, ficha de equipo y tarjeta de estimación de IA (siempre con su confianza y su advertencia).</p>
+      <div class="rejilla-4">
+        <a class="tarjeta tarjeta--interactiva" href="#tarjetas">
+          <div class="kpi__cab">Equipos disponibles<span class="kpi__icono p-disponible"><svg class="ic"><use href="#i-equipos"/></svg></span></div>
+          <div class="kpi__valor">22<span style="font-size:var(--texto-md);color:var(--color-texto-secundario)"> / 37</span></div>
+          <div class="kpi__pie"><span class="sube"><svg class="ic" style="width:14px;height:14px"><use href="#i-flecha"/></svg>+3</span>desde ayer</div>
+          <div class="kpi__linea" style="background:var(--estado-disponible-fuerte)"></div>
+        </a>
+        <a class="tarjeta tarjeta--interactiva" href="#tarjetas">
+          <div class="kpi__cab">Alquileres activos<span class="kpi__icono p-alquilado"><svg class="ic"><use href="#i-documento"/></svg></span></div>
+          <div class="kpi__valor">9</div>
+          <div class="kpi__pie">2 vencen esta semana</div>
+          <div class="kpi__linea" style="background:var(--estado-alquilado-fuerte)"></div>
+        </a>
+        <a class="tarjeta tarjeta--interactiva" href="#tarjetas">
+          <div class="kpi__cab">Vencidos<span class="kpi__icono p-fuera"><svg class="ic"><use href="#i-alerta"/></svg></span></div>
+          <div class="kpi__valor">1</div>
+          <div class="kpi__pie"><span class="baja"><svg class="ic" style="width:14px;height:14px"><use href="#i-flecha-abajo"/></svg>−2</span>frente al mes pasado</div>
+          <div class="kpi__linea" style="background:var(--estado-fuera-fuerte)"></div>
+        </a>
+        <a class="tarjeta tarjeta--interactiva" href="#tarjetas">
+          <div class="kpi__cab">Ingresos del mes<span class="kpi__icono p-marca"><svg class="ic"><use href="#i-dinero"/></svg></span></div>
+          <div class="kpi__valor" style="font-size:var(--texto-xl);padding:6px 0 3px">$4.250.000</div>
+          <div class="kpi__pie"><span class="sube"><svg class="ic" style="width:14px;height:14px"><use href="#i-flecha"/></svg>12 %</span>vs. septiembre</div>
+          <div class="kpi__linea" style="background:var(--color-acento)"></div>
+        </a>
+      </div>
+      <div class="rejilla-3" style="margin-top:var(--espacio-4)">
+        <article class="tarjeta equipo tarjeta--interactiva">
+          <div class="equipo__imagen"><svg class="ic"><use href="#i-llave"/></svg></div>
+          <div class="equipo__cab">
+            <div><h3>Taladro percutor</h3><span class="equipo__cod">TAL-001 · Taladros</span></div>
+            <span class="pildora p-disponible"><svg class="ic"><use href="#i-check"/></svg>Disponible</span>
+          </div>
+          <div class="equipo__pie">
+            <span class="precio">$25.000 <small>/ día</small></span>
+            <button class="btn btn--primario btn--sm">Alquilar</button>
+          </div>
+        </article>
+        <article class="tarjeta equipo tarjeta--interactiva">
+          <div class="equipo__imagen"><svg class="ic"><use href="#i-equipos"/></svg></div>
+          <div class="equipo__cab">
+            <div><h3>Generador 8 kW</h3><span class="equipo__cod">GEN-001 · Generadores</span></div>
+            <span class="pildora p-mantenimiento"><svg class="ic"><use href="#i-llave"/></svg>En mantenimiento</span>
+          </div>
+          <div class="equipo__pie">
+            <span class="precio">$70.000 <small>/ día</small></span>
+            <button class="btn btn--sm" disabled>No disponible</button>
+          </div>
+        </article>
+        <article class="tarjeta ia">
+          <span class="pildora p-marca"><svg class="ic"><use href="#i-bombilla"/></svg>Estimación</span>
+          <h3>6 equipos deberían revisarse pronto</h3>
+          <p>Según sus usos y los días desde el último mantenimiento.</p>
+          <div class="medidor" role="img" aria-label="Confianza alta, 80 por ciento"><div style="width:80%"></div></div>
+          <div class="kpi__pie" style="justify-content:space-between"><span>Confianza</span><b style="color:var(--color-texto)">Alta</b></div>
+          <p class="nota" style="margin-top:var(--espacio-3)">Apoyo a la decisión; no es una certeza.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 06 · FORMULARIOS -->
+    <section class="seccion" id="formularios">
+      <div class="seccion__cab"><span class="seccion__num">06</span><h2>Formularios</h2></div>
+      <p class="seccion__desc">Etiqueta siempre visible arriba, ayuda debajo y errores con ícono y mensaje (no solo un borde rojo).</p>
+      <div class="lienzo">
+        <div class="lienzo__titulo">Nuevo alquiler</div>
+        <div class="rejilla-2">
+          <div class="campo">
+            <label for="f-cliente">Cliente</label>
+            <div class="control"><svg class="ic"><use href="#i-buscar"/></svg><input id="f-cliente" placeholder="Nombre o documento" value="Ana Pérez · 1085000001"></div>
+            <span class="ayuda">Solo clientes activos.</span>
+          </div>
+          <div class="campo">
+            <label for="f-equipo">Equipo</label>
+            <div class="control"><select id="f-equipo"><option>TAL-001 · Taladro percutor — $25.000/día</option><option>GEN-002 · Generador diésel — $70.000/día</option></select><svg class="ic"><use href="#i-chevron"/></svg></div>
+            <span class="ayuda">Solo equipos disponibles.</span>
+          </div>
+          <div class="campo">
+            <label for="f-inicio">Inicio</label>
+            <div class="control"><svg class="ic"><use href="#i-calendario"/></svg><input id="f-inicio" value="05/10/2026"></div>
+          </div>
+          <div class="campo campo--error">
+            <label for="f-fin">Devolución prevista</label>
+            <div class="control"><svg class="ic"><use href="#i-calendario"/></svg><input id="f-fin" value="03/10/2026" aria-invalid="true" aria-describedby="f-fin-error"></div>
+            <span class="ayuda" id="f-fin-error"><svg class="ic"><use href="#i-alerta"/></svg>Debe ser posterior al inicio.</span>
+          </div>
+          <div class="campo">
+            <label for="f-notas">Notas</label>
+            <div class="control control--area"><textarea id="f-notas" placeholder="Accesorios entregados, estado del equipo…"></textarea></div>
+          </div>
+          <div class="campo campo--deshabilitado">
+            <label for="f-tarifa">Tarifa diaria</label>
+            <div class="control"><input id="f-tarifa" value="$25.000" disabled></div>
+            <span class="ayuda">Se toma del equipo elegido.</span>
+          </div>
+        </div>
+        <div class="rejilla-2" style="margin:var(--espacio-5) 0;align-items:center">
+          <label class="interruptor"><input type="checkbox" checked><span class="interruptor__pista"></span>Enviar recordatorio de devolución</label>
+          <div class="resumen-costo"><span>3 días × $25.000</span><b>$75.000</b></div>
+        </div>
+        <div class="acciones">
+          <button class="btn btn--fantasma">Cancelar</button>
+          <button class="btn btn--primario"><svg class="ic"><use href="#i-check"/></svg>Registrar alquiler</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 · LISTAS Y TABLAS -->
+    <section class="seccion" id="listas">
+      <div class="seccion__cab"><span class="seccion__num">07</span><h2>Listas y tablas</h2></div>
+      <p class="seccion__desc">Filas de tabla con estado, montos alineados a la derecha y fila seleccionada; filas de lista para personas.</p>
+      <div class="lienzo">
+        <div class="barra-tabla">
+          <div class="control" style="width:320px"><svg class="ic"><use href="#i-buscar"/></svg><input placeholder="Buscar por código o nombre"></div>
+          <button class="btn btn--primario"><svg class="ic"><use href="#i-mas"/></svg>Nuevo equipo</button>
+        </div>
+        <table class="tabla">
+          <thead><tr><th>Equipo</th><th>Categoría</th><th>Estado</th><th class="num">Tarifa / día</th><th class="num">Usos</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><div class="equipo-celda"><span class="equipo-celda__icono"><svg class="ic"><use href="#i-llave"/></svg></span><div>Taladro percutor<small>TAL-001</small></div></div></td><td>Taladros</td><td><span class="pildora p-disponible"><svg class="ic"><use href="#i-check"/></svg>Disponible</span></td><td class="num">$25.000</td><td class="num">36</td><td class="num"><button class="btn btn--fantasma btn--icono btn--sm" aria-label="Editar"><svg class="ic"><use href="#i-editar"/></svg></button></td></tr>
+            <tr class="seleccionada"><td><div class="equipo-celda"><span class="equipo-celda__icono"><svg class="ic"><use href="#i-equipos"/></svg></span><div>Andamio tubular<small>AND-002</small></div></div></td><td>Andamios</td><td><span class="pildora p-alquilado"><svg class="ic"><use href="#i-flecha"/></svg>Alquilado</span></td><td class="num">$45.000</td><td class="num">27</td><td class="num"><button class="btn btn--fantasma btn--icono btn--sm" aria-label="Editar" style="color:var(--color-blanco)"><svg class="ic"><use href="#i-editar"/></svg></button></td></tr>
+            <tr><td><div class="equipo-celda"><span class="equipo-celda__icono"><svg class="ic"><use href="#i-equipos"/></svg></span><div>Mezcladora 2 bultos<small>MEZ-001</small></div></div></td><td>Mezcladoras</td><td><span class="pildora p-reservado"><svg class="ic"><use href="#i-reloj"/></svg>Reservado</span></td><td class="num">$60.000</td><td class="num">41</td><td class="num"><button class="btn btn--fantasma btn--icono btn--sm" aria-label="Editar"><svg class="ic"><use href="#i-editar"/></svg></button></td></tr>
+            <tr><td><div class="equipo-celda"><span class="equipo-celda__icono"><svg class="ic"><use href="#i-equipos"/></svg></span><div>Compresor 100 L<small>COM-002</small></div></div></td><td>Compresores</td><td><span class="pildora p-fuera"><svg class="ic"><use href="#i-x"/></svg>Fuera de servicio</span></td><td class="num">$45.000</td><td class="num">22</td><td class="num"><button class="btn btn--fantasma btn--icono btn--sm" aria-label="Editar"><svg class="ic"><use href="#i-editar"/></svg></button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="lienzo">
+        <div class="lienzo__titulo">Clientes con saldo pendiente</div>
+        <div class="lista">
+          <div class="fila-lista"><span class="avatar">AP</span><div class="fila-lista__texto"><b>Ana Pérez</b><span>1085000001 · 2 alquileres activos</span></div><span class="pildora p-mantenimiento"><svg class="ic"><use href="#i-reloj"/></svg>Vence hoy</span><div class="fila-lista__monto"><b>$120.000</b><small>saldo</small></div></div>
+          <div class="fila-lista"><span class="avatar">LG</span><div class="fila-lista__texto"><b>Luis Gómez</b><span>1085000040 · 1 alquiler activo</span></div><span class="pildora p-fuera"><svg class="ic"><use href="#i-alerta"/></svg>Vencido 3 días</span><div class="fila-lista__monto"><b>$95.500</b><small>saldo + mora</small></div></div>
+          <div class="fila-lista"><span class="avatar">CB</span><div class="fila-lista__texto"><b>Camilo Benavides</b><span>1085000050 · 1 alquiler activo</span></div><span class="pildora p-disponible"><svg class="ic"><use href="#i-check"/></svg>Al día</span><div class="fila-lista__monto"><b>$40.000</b><small>saldo</small></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 · ESTADOS -->
+    <section class="seccion" id="estados">
+      <div class="seccion__cab"><span class="seccion__num">08</span><h2>Cargando, vacío y error</h2></div>
+      <p class="seccion__desc">Toda pantalla que carga datos contempla estos tres casos. El vacío invita a actuar; el error explica qué pasó y ofrece reintentar.</p>
+      <div class="rejilla-3">
+        <div class="lienzo estado" aria-busy="true" aria-label="Cargando clientes">
+          <div class="lienzo__titulo">Cargando</div>
+          <div class="esq-fila"><div class="esqueleto esq-circulo"></div><div style="flex:1"><div class="esqueleto" style="height:12px;width:70%"></div><div class="esqueleto" style="height:10px;width:45%;margin-top:8px"></div></div></div>
+          <div class="esq-fila"><div class="esqueleto esq-circulo"></div><div style="flex:1"><div class="esqueleto" style="height:12px;width:60%"></div><div class="esqueleto" style="height:10px;width:35%;margin-top:8px"></div></div></div>
+          <div class="esq-fila"><div class="esqueleto esq-circulo"></div><div style="flex:1"><div class="esqueleto" style="height:12px;width:75%"></div><div class="esqueleto" style="height:10px;width:50%;margin-top:8px"></div></div></div>
+          <div class="cargando-texto"><svg class="ic giro"><use href="#i-girador"/></svg>Cargando clientes…</div>
+        </div>
+        <div class="lienzo estado">
+          <div class="lienzo__titulo">Vacío</div>
+          <div class="vacio">
+            <div class="vacio__ilustracion"><svg class="ic"><use href="#i-bandeja"/></svg></div>
+            <h3>Aún no hay reservas</h3>
+            <p>Cuando un cliente aparte un equipo para una fecha futura, aparecerá aquí.</p>
+            <button class="btn btn--primario btn--sm"><svg class="ic"><use href="#i-mas"/></svg>Crear reserva</button>
+          </div>
+        </div>
+        <div class="lienzo estado" role="alert">
+          <div class="lienzo__titulo">Error</div>
+          <div class="error">
+            <div class="error__ilustracion"><svg class="ic"><use href="#i-alerta"/></svg></div>
+            <h3>No se pudieron cargar los reportes</h3>
+            <p>Revisa tu conexión o intenta de nuevo. Tus datos no se perdieron.</p>
+            <button class="btn btn--sm"><svg class="ic"><use href="#i-recargar"/></svg>Reintentar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 · AVISOS -->
+    <section class="seccion" id="avisos">
+      <div class="seccion__cab"><span class="seccion__num">09</span><h2>Avisos</h2></div>
+      <p class="seccion__desc">Mensajes breves con ícono propio por tipo, para que no dependan solo del color.</p>
+      <div class="rejilla-2">
+        <div class="aviso aviso--exito"><span class="aviso__icono"><svg class="ic"><use href="#i-check"/></svg></span><div><b>Alquiler registrado</b><p>TAL-001 quedó a nombre de Ana Pérez hasta el 08/10.</p></div></div>
+        <div class="aviso aviso--info"><span class="aviso__icono"><svg class="ic"><use href="#i-info"/></svg></span><div><b>IA sin clave</b><p>Las consultas rápidas siguen funcionando sin conexión.</p></div></div>
+        <div class="aviso aviso--cuidado"><span class="aviso__icono"><svg class="ic"><use href="#i-reloj"/></svg></span><div><b>Devolución hoy</b><p>2 equipos deben regresar antes de las 6:00 p. m.</p></div></div>
+        <div class="aviso aviso--error"><span class="aviso__icono"><svg class="ic"><use href="#i-alerta"/></svg></span><div><b>No se pudo guardar</b><p>La fecha de devolución es anterior al inicio.</p></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+// Muestras de color: el valor se lee de tokens.css, así la página nunca se desincroniza.
+(function () {
+  const muestras = [
+    ["Fondo hundido", "--color-fondo-hundido"], ["Fondo", "--color-fondo"],
+    ["Superficie", "--color-superficie"], ["Superficie alta", "--color-superficie-alta"],
+    ["Texto", "--color-texto"], ["Texto secundario", "--color-texto-secundario"],
+    ["Acento", "--color-acento"], ["Acento suave", "--color-acento-suave"],
+    ["Secundario", "--color-secundario"], ["Selección", "--color-seleccion"],
+    ["Peligro", "--color-peligro"], ["Peligro fuerte", "--color-peligro-fuerte"],
+  ];
+  const raiz = getComputedStyle(document.documentElement);
+  const contenedor = document.getElementById("muestras");
+  for (const [nombre, variable] of muestras) {
+    const valor = raiz.getPropertyValue(variable).trim();
+    const tarjeta = document.createElement("div");
+    tarjeta.className = "muestra";
+    tarjeta.innerHTML = `<div class="muestra__color" style="background:var(${variable})"></div>
+      <div class="muestra__info"><b>${nombre}</b><code>${variable}</code><br><code>${valor}</code></div>`;
+    contenedor.appendChild(tarjeta);
+  }
+  // Menú: resalta la sección visible.
+  const enlaces = [...document.querySelectorAll(".nav a")];
+  const observador = new IntersectionObserver((entradas) => {
+    for (const e of entradas) if (e.isIntersecting) {
+      enlaces.forEach((a) => a.classList.toggle("activo", a.getAttribute("href") === "#" + e.target.id));
+    }
+  }, { rootMargin: "-30% 0px -60% 0px" });
+  document.querySelectorAll(".seccion").forEach((s) => observador.observe(s));
+})();
+</script>
+</body>
+</html>

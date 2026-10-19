@@ -23,7 +23,8 @@ from alquiler.models import Equipo
 from alquiler.ui.login import LoginDialog
 from alquiler.ui.logica.contexto import Contexto
 from alquiler.ui.ventana import VentanaPrincipal
-from alquiler.ui.widgets import ESTILO, configurar_locale
+from alquiler.ui import tema
+from alquiler.ui.widgets import configurar_locale
 
 
 def preparar_base(config: Config) -> sessionmaker[Session]:
@@ -176,14 +177,14 @@ def main(argv: list[str] | None = None) -> int:
     if error:
         QMessageBox.critical(None, "Configuración no válida", error)
         return 1
-    aplicacion.setStyleSheet(ESTILO)
+    tema.aplicar(aplicacion)
     configurar_locale()
     fabrica = preparar_base(config)
 
     def cargar_con_aviso(*args):
         aviso = QLabel("Cargando datos de demostración…")
         aviso.setWindowFlag(Qt.WindowType.SplashScreen)
-        aviso.setStyleSheet("padding: 24px; font-size: 14px; background: white;")
+        aviso.setObjectName("avisoCarga")
         aviso.show()
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         aplicacion.processEvents()

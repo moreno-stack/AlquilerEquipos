@@ -100,6 +100,12 @@ class VistaAnalisisIA(QWidget):
         self.tabs.currentChanged.connect(self._al_cambiar)
         self._al_cambiar(0)
 
+    def analizar(self):
+        """"Ejecutar diagnóstico": vuelve a analizar la pestaña abierta (si no está ya en curso)."""
+        pestana = self.tabs.currentWidget()
+        if pestana.boton.isEnabled():
+            pestana.analizar()
+
     def _al_cambiar(self, indice: int):
         pestana = self.tabs.widget(indice)
         if not pestana.analizado:  # cada análisis se ejecuta al abrir su pestaña

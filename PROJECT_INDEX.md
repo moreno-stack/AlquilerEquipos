@@ -97,9 +97,12 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `alquiler/ui/logica/ia.py` | Tarjetas de resultados de IA y adaptación de la consola. |
 | `alquiler/ui/logica/inicio.py` | Pantalla de Inicio: `resumen(ctx)` por permisos (flota, operación, mantenimiento, ingresos del mes, alerta de IA sin persistir, "mis alquileres"), `tarjetas_kpi`, `fecha_larga` y `saludo_para`. |
 | `alquiler/ui/trabajador.py` | `ejecutar_en_segundo_plano` con QThreadPool: el resultado vuelve al hilo GUI y se descarta si el widget ya se destruyó. |
-| `alquiler/ui/tema.py` | Tema "Taller industrial": `PALETA`, `COLOR_ESTADO`, `TONOS`, `contraste` (WCAG) y `hoja_de_estilo()`; único archivo de la interfaz que escribe colores. |
+| `alquiler/ui/tema.py` | Traduce a Qt los tokens de `diseno/tokens.css` (paleta, estados, QSS, `aplicar(app)` con Fusion oscuro); no escribe ningún color a mano. |
+| `alquiler/ui/iconos.py` | Iconos vectoriales del menú (SVG en código, QtSvg) con color normal y de sección activa. |
+| `alquiler/ui/centro.py` | Piezas del centro de control: `FondoCosmico` (red de datos), `Panel` de vidrio, `aplicar_brillo` (neón), `GraficoDona` y `GraficoTendencia`. |
 | `alquiler/ui/widgets.py` | `ESTILO` (desde el tema), `marca`, `TarjetaKPI` y `BarraEstados` (Inicio), `configurar_locale` (es-CO), `Tabla`, `Insignia`, `TarjetaResultado`, `botones_dialogo` (protección contra doble clic) y `ejecutar_accion`. |
-| `alquiler/ui/login.py` | Diálogo de inicio de sesión. |
+| `alquiler/ui/login.py` | Portada de ingreso: fondo cósmico animado, marca con degradado, beneficios y panel de vidrio con usuario y contraseña (tiembla ante un error). |
+| `alquiler/ui/animacion.py` | Animaciones: fundido y entrada escalonada, cifras que cuentan, barras que se llenan, temblor y brillo al pasar el cursor; duraciones de `tokens.css`, apagadas sin pantalla o con `ALQUILER_ANIMACIONES=0`. |
 | `alquiler/ui/ventana.py` | Ventana principal: barra lateral por rol, vistas perezosas, recarga al volver a una sección y espera de tareas al cerrar. |
 | `alquiler/ui/vistas/__init__.py` | Paquete de vistas. |
 | `alquiler/ui/vistas/equipos.py` | Catálogo, `PanelEstados` (máquina de estados visual) y diálogos de equipo, categoría y mantenimiento. |
@@ -109,7 +112,7 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `alquiler/ui/vistas/reservas.py` | Reservas pendientes, listas y vencidas; entregar y cancelar. |
 | `alquiler/ui/vistas/reportes.py` | KPIs y gráficos QtCharts, generados en segundo plano. |
 | `alquiler/ui/vistas/ia.py` | Análisis IA: pestañas con tarjetas explicables. |
-| `alquiler/ui/vistas/inicio.py` | Inicio: saludo, tarjetas KPI navegables, estado de la flota y alerta de IA; carga en segundo plano y recarga al volver. |
+| `alquiler/ui/vistas/inicio.py` | Tablero de control: KPI con ícono, tendencia de alquileres, utilización de la flota (dona), ocupación por categoría, alerta de IA y monitor de actividad; carga en segundo plano. |
 | `alquiler/ui/vistas/consola_ia.py` | Consola IA: respuesta en dos partes, historial, consultas rápidas y sugerencias. |
 | `alquiler/ui/vistas/usuarios.py` | Cuentas y roles. |
 | `alquiler/ui/vistas/perfil.py` | Contraseña propia; contacto e historial del cliente. |
@@ -120,6 +123,9 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 |---|---|
 | `README.md` | Instalación, configuración, inicio rápido, privacidad, pruebas y empaquetado. |
 | `PROJECT_INDEX.md` | Este mapa. |
+| `diseno/DESIGN.md` | Sistema de diseño: principios, color, tipografía, espaciado, radios, sombras, movimiento y accesibilidad. |
+| `diseno/tokens.css` | Variables CSS del sistema de diseño: única fuente de verdad visual (app de escritorio y styleguide). |
+| `diseno/styleguide.html` | Página de componentes (botones, estados, tarjetas, formularios, listas, cargando/vacío/error, avisos) hecha solo con `tokens.css`. |
 | `AlquilerEquipos.spec` | PyInstaller *onedir*: incluye las migraciones como datos, excluye los módulos de Qt no usados y copia `alquiler.env.ejemplo` junto al ejecutable. |
 | `alquiler.env.ejemplo` | Plantilla de configuración: se copia como `alquiler.env` (ignorado por git) y se pega la clave de Groq. |
 | `scripts/lanzador.py` | Punto de entrada del ejecutable. |
@@ -199,7 +205,12 @@ la suite. La API de Groq se reemplaza por `ClienteFalso` o por `httpx.MockTransp
 | `tests/ui/logica/test_inicio.py` | Bloques por rol, conteos (vencidos frente a "vencen hoy"), ingresos del mes, base vacía, destinos visibles y que Inicio no persiste recomendaciones. |
 | `tests/ui/test_arquitectura.py` | Las vistas no importan el backend (análisis AST). |
 | `tests/ui/test_trabajador.py` | Trabajo fuera del hilo GUI, resultado en el GUI y dueño destruido. |
-| `tests/ui/test_tema.py` | Contraste AA de todos los pares de la paleta, tokens en la QSS y ningún color fuera de `tema.py`. |
+| `tests/ui/test_tokens.py` | `tokens.css` es la única fuente (también del styleguide, que no escribe colores y solo usa variables existentes): la paleta de la app sale de ahí, el lector ignora comentarios y `@media`, error claro si falta un token, el ejecutable lo empaqueta. |
+| `tests/ui/test_tema.py` | Tema oscuro: contraste AA de todos los pares, componentes gráficos ≥ 3:1, Fusion y paleta oscura, emergentes oscuros y ningún color fuera de `tema.py`. |
+| `tests/ui/test_iconos.py` | Un icono por sección, se dibuja y cambia de color al seleccionarse; el menú lateral los muestra. |
+| `tests/ui/test_widgets_centro.py` | Fondo cósmico determinista, panel de vidrio, brillo neón, dona (segmentos, centro, vacía), tendencia (series, recarga sin acumular) y KPI con ícono. |
+| `tests/ui/test_animacion.py` | Duraciones de los tokens, apagado sin pantalla y por variable, contador con formato, fundido que restaura el brillo, cascada, barras, temblor, brillo al pasar, fondo que flota, dona que gira y tendencia animada. |
+| `tests/ui/test_portada.py` | Portada de ingreso: estructura, campos con ícono, login correcto, temblor ante error y entrada animada. |
 | `tests/ui/test_widgets_inicio.py` | `TarjetaKPI` (clic navega solo con destino) y `BarraEstados` (segmentos, caso vacío, pintado). |
 | `tests/ui/test_widgets.py` | Tabla, insignias, tarjeta de IA y configuración regional es-CO. |
 | `tests/ui/test_ventana.py` | Login, barra lateral por rol, vistas perezosas y oferta de datos demo. |

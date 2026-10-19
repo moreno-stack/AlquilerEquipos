@@ -41,7 +41,7 @@ AJENOS = ["numpy", "PIL", "cryptography", "matplotlib", "pandas", "scipy", "IPyt
 a = Analysis(
     [str(RAIZ / "scripts" / "lanzador.py")],
     pathex=[str(RAIZ)],
-    datas=MIGRACIONES,
+    datas=[*MIGRACIONES, (str(RAIZ / "diseno" / "tokens.css"), "diseno")],  # colores del tema
     hiddenimports=[
         *collect_submodules("alquiler"),       # vistas importadas de forma perezosa, seed
         *collect_submodules("alembic"),        # comandos y operaciones usados por init_db

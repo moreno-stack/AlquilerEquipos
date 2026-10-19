@@ -19,7 +19,15 @@ from PySide6.QtWidgets import (
 )
 
 from alquiler.errors import ReglaNegocioError
-from alquiler.ui import tema
+from alquiler.ui import animacion, iconos, tema
+from alquiler.ui.centro import (  # noqa: F401  (se reexportan para las vistas)
+    FondoCosmico,
+    GraficoDona,
+    GraficoTendencia,
+    Panel,
+    TextoDegradado,
+    aplicar_brillo,
+)
 
 # ---------------------------------------------------------------- estilo
 TONOS = tema.TONOS  # tono: (fondo, texto)
@@ -181,7 +189,8 @@ class Tabla(QTableView):
 
 # ---------------------------------------------------------------- inicio
 class TarjetaKPI(QFrame):
-    """Indicador de Inicio: título, valor grande, detalle y franja del color del tono.
+    """Indicador del tablero: título en versalitas, ícono en caja de color, valor grande, detalle
+    y una línea neón inferior del color del tono.
 
     Si tiene ``destino`` (clave de sección), un clic emite ``activada(destino)``.
     """
@@ -196,28 +205,42 @@ class TarjetaKPI(QFrame):
         if self.destino:
             self.setCursor(Qt.CursorShape.PointingHandCursor)
             self.setToolTip("Abrir la sección")
+        tono = datos.get("tono", "neutro")
+        color = tema.COLOR_TONO.get(tono, tema.COLOR_TONO["neutro"])
+        fondo_icono = tema.TONOS.get(tono, tema.TONOS["neutro"])[0]
         capa = QVBoxLayout(self)
-        capa.setContentsMargins(0, 0, 0, 12)
-        capa.setSpacing(2)
-        franja = QFrame()
-        franja.setObjectName("kpiFranja")
-        franja.setFixedHeight(4)
-        franja.setStyleSheet("background: %s; border: none; border-top-left-radius: 10px;"
-                             "border-top-right-radius: 10px;"
-                             % tema.COLOR_TONO.get(datos.get("tono", "neutro"), tema.COLOR_TONO["neutro"]))
-        capa.addWidget(franja)
+        capa.setContentsMargins(16, 14, 16, 0)
+        capa.setSpacing(4)
+        cabecera = QHBoxLayout()
         self.etiqueta_titulo = QLabel(datos.get("titulo", ""))
-        self.etiqueta_titulo.setObjectName("kpiTitulo")
+        self.etiqueta_titulo.setObjectName("tituloModulo")
+        cabecera.addWidget(self.etiqueta_titulo, 1)
+        self.etiqueta_icono = None
+        if datos.get("icono"):
+            self.etiqueta_icono = QLabel()
+            self.etiqueta_icono.setFixedSize(34, 34)
+            self.etiqueta_icono.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.etiqueta_icono.setStyleSheet(f"background: {fondo_icono}; border-radius: 9px;")
+            self.etiqueta_icono.setPixmap(iconos.icono(datos["icono"], color).pixmap(18, 18))
+            cabecera.addWidget(self.etiqueta_icono)
+        capa.addLayout(cabecera)
         self.etiqueta_valor = QLabel(str(datos.get("valor", "")))
         self.etiqueta_valor.setObjectName("kpiValor")
         self.etiqueta_detalle = QLabel(datos.get("detalle") or "")
         self.etiqueta_detalle.setObjectName("kpiDetalle")
         self.etiqueta_detalle.setVisible(bool(datos.get("detalle")))
-        for etiqueta in (self.etiqueta_titulo, self.etiqueta_valor, self.etiqueta_detalle):
-            etiqueta.setContentsMargins(14, 0, 14, 0)
-            capa.addWidget(etiqueta)
-        capa.insertSpacing(1, 8)
-        capa.addStretch(1)  # contenido arriba aunque la tarjeta no tenga detalle
+        capa.addWidget(self.etiqueta_valor)
+        capa.addWidget(self.etiqueta_detalle)
+        capa.addStretch(1)
+        franja = QFrame()
+        franja.setObjectName("kpiFranja")
+        franja.setFixedHeight(3)
+        franja.setStyleSheet(f"background: {color}; border: none; border-radius: 1px;")
+        capa.addSpacing(10)
+        capa.addWidget(franja)
+        self.setMinimumHeight(128)
+        aplicar_brillo(self, "acento", alfa=38, radio=26)
+        animacion.brillo_al_pasar(self)
 
     def mouseReleaseEvent(self, evento):
         if self.destino and evento.button() == Qt.MouseButton.LeftButton:

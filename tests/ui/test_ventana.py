@@ -96,3 +96,61 @@ def test_no_ofrece_demo_si_ya_hay_datos(config, datos_base, fabrica):
     preguntas = []
     assert app.ofrecer_demo(config, fabrica, preguntar=lambda: preguntas.append(1)) is False
     assert preguntas == []
+
+
+# ---------------------------------------------------------------- centro de control
+def test_estado_del_sistema_en_la_barra_lateral(qtbot, ctx_factory):
+    sin_ia = VentanaPrincipal(ctx_factory("empleado"), {})
+    con_ia = VentanaPrincipal(ctx_factory("admin", cliente_llm=object()), {})
+    for v in (sin_ia, con_ia):
+        qtbot.addWidget(v)
+    assert sin_ia.barra_ia.value() == 0 and sin_ia.etiqueta_estado_ia.text() == "Sin clave"
+    assert con_ia.barra_ia.value() == 100 and con_ia.etiqueta_estado_ia.text() == "Conectada"
+    assert con_ia.barra_base.value() == 100
+    assert ":" in con_ia.etiqueta_actualizacion.text()  # hora de la última actualización
+
+
+def test_contenido_sobre_fondo_cosmico(qtbot, ctx_factory):
+    from alquiler.ui.widgets import FondoCosmico
+    v = VentanaPrincipal(ctx_factory("admin"), {})
+    qtbot.addWidget(v)
+    assert isinstance(v.fondo, FondoCosmico) and v.fondo.isAncestorOf(v.pila)
+
+
+def test_buscador_global_abre_equipos_con_el_texto(qtbot, ctx_factory, datos_base):
+    v = VentanaPrincipal(ctx_factory("admin"), app.fabricas_de_vistas())
+    qtbot.addWidget(v)
+    v.buscador.setText("TAL-002")
+    v.buscador.returnPressed.emit()
+    assert v.clave_actual() == "equipos"
+    assert v.vista_actual().campo_buscar.text() == "TAL-002"
+
+
+def test_ejecutar_diagnostico_abre_y_lanza_el_analisis(qtbot, ctx_factory, datos_base, monkeypatch):
+    from alquiler.ui.vistas.ia import VistaAnalisisIA
+    lanzados = []
+    monkeypatch.setattr(VistaAnalisisIA, "analizar", lambda self: lanzados.append(True))
+    v = VentanaPrincipal(ctx_factory("admin"), app.fabricas_de_vistas())
+    qtbot.addWidget(v)
+    v.boton_diagnostico.click()
+    assert v.clave_actual() == "analisis_ia" and lanzados == [True]
+
+
+def test_cliente_no_ve_diagnostico(qtbot, ctx_factory):
+    v = VentanaPrincipal(ctx_factory("cliente"), {})
+    qtbot.addWidget(v)
+    assert v.boton_diagnostico.isHidden()
+
+
+def test_cambio_de_seccion_con_fundido(qtbot, ctx_factory, monkeypatch):
+    from PySide6.QtCore import QAbstractAnimation
+    from PySide6.QtWidgets import QGraphicsOpacityEffect
+    from alquiler.ui import animacion
+    monkeypatch.setattr(animacion, "_forzado", True)
+    v = VentanaPrincipal(ctx_factory("admin"), {"perfil": lambda ctx: QLabel("perfil")})
+    qtbot.addWidget(v)
+    v.ir_a("perfil")
+    assert isinstance(v.vista_actual().graphicsEffect(), QGraphicsOpacityEffect)
+    anim = v.animacion_seccion
+    qtbot.waitUntil(lambda: anim.state() == QAbstractAnimation.State.Stopped, timeout=3000)
+    assert v.vista_actual().graphicsEffect() is None

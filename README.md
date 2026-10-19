@@ -12,8 +12,7 @@ mantenimiento y reportes. Incluye un **núcleo de IA explicable**:
 Todo resultado de IA se presenta como **estimación**, acompañado de su nivel de confianza, sus
 indicadores y la justificación paso a paso.
 
-La interfaz usa el tema **"Taller industrial"** (grafito, ámbar de seguridad y acero, con un
-color fijo por estado de equipo y contraste verificado WCAG AA) y abre en una pantalla de
+La interfaz usa el tema **"Pizarra y cian"** (fondo azul pizarra, acento cian y detalles violeta, menú lateral con iconos, un color fijo por estado de equipo y contraste verificado WCAG AA) y abre en una pantalla de
 **Inicio** con indicadores según el rol: disponibilidad de la flota, alquileres activos y
 vencidos, reservas por entregar, mantenimientos abiertos, ingresos del mes y la alerta de
 mantenimiento de la IA; los clientes ven sus alquileres activos y su saldo.

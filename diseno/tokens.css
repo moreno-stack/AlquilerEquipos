@@ -1,0 +1,130 @@
+/*
+ * Tokens del sistema de diseño "Centro de control" (azul medianoche, cian y púrpura neón) — Sistema Inteligente de Alquiler de Equipos.
+ *
+ * ÚNICA fuente de verdad visual. La aplicación de escritorio (alquiler/ui/tema.py) y la
+ * página de componentes (diseno/styleguide.html) leen ESTE archivo: ninguna pantalla
+ * define un color, una medida o un tiempo a mano. Documentación: diseno/DESIGN.md.
+ */
+:root {
+  /* ── Color · superficies (de más oscura a más clara) ─────────────────── */
+  --color-fondo-hundido: #040814;     /* menú lateral, barra de estado */
+  --color-fondo: #060B1A;             /* fondo de la ventana */
+  --color-superficie: #0D1630;        /* tarjetas, tablas, campos */
+  --color-superficie-alta: #15213F;   /* filas alternas, botón secundario, hover */
+  --color-borde: #1E2B4D;
+  --color-borde-fuerte: #2E3D63;
+  --color-rejilla: #1A2647;           /* líneas de tablas y gráficos */
+
+  /* ── Color · texto ───────────────────────────────────────────────────── */
+  --color-texto: #E2E8F0;
+  --color-texto-secundario: #94A3B8;
+  --color-texto-deshabilitado: #64748B;
+  --color-blanco: #FFFFFF;
+
+  /* ── Color · acento (lo que se toca o está activo) ───────────────────── */
+  --color-acento: #22D3EE;
+  --color-acento-hover: #67E8F9;
+  --color-sobre-acento: #020617;      /* texto e iconos sobre el acento */
+  --color-acento-suave: #083344;      /* fondos de avisos de marca */
+  --color-acento-texto: #67E8F9;      /* texto sobre acento-suave */
+  --color-secundario: #A78BFA;        /* violeta: detalles y final del degradado */
+  --color-secundario-claro: #C4B5FD;  /* final del degradado al pasar el cursor */
+  --color-seleccion: #0E7490;         /* filas seleccionadas (texto blanco) */
+
+  /* ── Color · transparencias (brillos, velos y halos) ─────────────────── */
+  --color-brillo: rgba(226, 232, 240, 0.06);      /* barrido del esqueleto, reflejo superior */
+  --color-acento-halo: rgba(34, 211, 238, 0.14);  /* resplandor detrás de elementos activos */
+  --color-velo: rgba(2, 6, 23, 0.65);             /* fondo detrás de diálogos */
+
+  /* ── Neón y vidrio esmerilado (centro de control) ───────────────────── */
+  --color-azul-electrico: #3B82F6;    /* segunda serie de gráficos, detalles */
+  --color-purpura-neon: #A855F7;      /* brillos y líneas; nunca detrás de texto */
+  --color-vidrio: rgba(13, 22, 48, 0.62);          /* paneles translúcidos */
+  --color-vidrio-alto: rgba(21, 33, 63, 0.78);     /* paneles destacados, hover */
+  --color-vidrio-borde: rgba(56, 189, 248, 0.22);  /* borde neón suave de los paneles */
+  --color-neon-halo: rgba(34, 211, 238, 0.35);     /* resplandor cian alrededor de paneles */
+  --color-purpura-halo: rgba(168, 85, 247, 0.30);  /* resplandor púrpura */
+
+  /* ── Degradado de marca (lo llamativo; ver DESIGN.md §2.6) ───────────── */
+  --degradado-marca: linear-gradient(135deg, var(--color-acento) 0%, var(--color-secundario) 100%);
+  --degradado-marca-hover: linear-gradient(135deg, var(--color-acento-hover) 0%, var(--color-secundario-claro) 100%);
+  --color-aurora-cian: rgba(34, 211, 238, 0.16);     /* resplandor del fondo */
+  --color-aurora-violeta: rgba(167, 139, 250, 0.14);
+
+  /* ── Color · peligro ─────────────────────────────────────────────────── */
+  --color-peligro: #FB7185;           /* texto y borde de acciones destructivas */
+  --color-peligro-fuerte: #BE123C;    /* relleno al pasar el cursor (texto blanco) */
+
+  /* ── Color · estados del equipo (fuerte = barras, fondo/texto = etiquetas) ── */
+  --estado-disponible-fuerte: #34D399;
+  --estado-disponible-fondo: #064E3B;
+  --estado-disponible-texto: #A7F3D0;
+  --estado-alquilado-fuerte: #60A5FA;
+  --estado-alquilado-fondo: #1E3A8A;
+  --estado-alquilado-texto: #BFDBFE;
+  --estado-reservado-fuerte: #A78BFA;
+  --estado-reservado-fondo: #4C1D95;
+  --estado-reservado-texto: #DDD6FE;
+  --estado-mantenimiento-fuerte: #FBBF24;
+  --estado-mantenimiento-fondo: #78350F;
+  --estado-mantenimiento-texto: #FDE68A;
+  --estado-fuera-fuerte: #FB7185;
+  --estado-fuera-fondo: #881337;
+  --estado-fuera-texto: #FECDD3;
+
+  /* ── Tipografía ──────────────────────────────────────────────────────── */
+  --fuente-titulos: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --fuente-texto: "Inter", "Segoe UI", system-ui, sans-serif;
+  --fuente-numeros: "Inter", "Segoe UI", system-ui, sans-serif;  /* cifras tabulares */
+  --texto-xs: 12px;     /* leyendas, avisos */
+  --texto-sm: 13px;     /* etiquetas, tablas */
+  --texto-base: 14px;   /* cuerpo */
+  --texto-md: 16px;     /* subtítulos de tarjeta */
+  --texto-lg: 20px;     /* títulos de sección internos */
+  --texto-xl: 24px;     /* título de pantalla */
+  --texto-2xl: 32px;    /* cifras de indicadores */
+  --peso-normal: 400;
+  --peso-medio: 600;
+  --peso-fuerte: 700;
+  --interlineado-ajustado: 1.2;
+  --interlineado-normal: 1.5;
+
+  /* ── Espaciado (base 4 px) ───────────────────────────────────────────── */
+  --espacio-1: 4px;
+  --espacio-2: 8px;
+  --espacio-3: 12px;
+  --espacio-4: 16px;
+  --espacio-5: 20px;
+  --espacio-6: 24px;
+  --espacio-8: 32px;
+  --espacio-10: 40px;
+  --espacio-12: 48px;
+
+  /* ── Radios de borde ─────────────────────────────────────────────────── */
+  --radio-sm: 6px;      /* etiquetas cuadradas, casillas */
+  --radio-md: 8px;      /* botones, campos */
+  --radio-lg: 12px;     /* tarjetas, paneles */
+  --radio-pildora: 999px;
+
+  /* ── Sombras (oscuras y sutiles: la profundidad la da el tono, no la sombra) ── */
+  --sombra-1: 0 1px 2px rgba(2, 6, 23, 0.45);
+  --sombra-2: 0 8px 24px rgba(2, 6, 23, 0.55);
+  --sombra-foco: 0 0 0 3px rgba(34, 211, 238, 0.40);
+
+  /* ── Movimiento ──────────────────────────────────────────────────────── */
+  --duracion-rapida: 120ms;   /* hover, presionar */
+  --duracion-base: 200ms;     /* aparecer/ocultar elementos pequeños */
+  --duracion-lenta: 320ms;    /* entrada de tarjetas y paneles */
+  --curva-salida: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --curva-entrada-salida: cubic-bezier(0.4, 0, 0.2, 1);
+  --desplazamiento-entrada: 12px;  /* recorrido máximo de una entrada */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duracion-rapida: 0ms;
+    --duracion-base: 0ms;
+    --duracion-lenta: 0ms;
+    --desplazamiento-entrada: 0px;
+  }
+}

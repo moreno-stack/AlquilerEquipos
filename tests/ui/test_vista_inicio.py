@@ -38,7 +38,7 @@ def test_vista_admin(qtbot, ctx_factory, datos_base):
     _esperar(qtbot, vista)
     assert vista.etiqueta_saludo.text().endswith(", Admin")
     assert len(vista.tarjetas) == 7
-    assert vista.barra_estados.segmentos()[0][:2] == ("Disponible", 2)
+    assert vista.grafico_flota.segmentos()[0][:2] == ("Disponible", 2)
     assert vista.panel_alerta is not None and vista.boton_ver_analisis is not None
 
 
@@ -46,7 +46,8 @@ def test_vista_cliente(qtbot, ctx_factory, datos_base):
     vista = VistaInicio(ctx_factory("cliente"))
     qtbot.addWidget(vista)
     _esperar(qtbot, vista)
-    assert vista.barra_estados is None and vista.panel_alerta is None
+    assert vista.grafico_flota is None and vista.panel_alerta is None
+    assert vista.grafico_tendencia is None and vista.tabla_monitor is None
     assert [t.etiqueta_titulo.text() for t in vista.tarjetas] == [
         "Mis alquileres activos", "Saldo pendiente"]
 
@@ -69,12 +70,12 @@ def test_recarga_al_volver(qtbot, ctx_factory, datos_base):
     vista = VistaInicio(ctx)
     qtbot.addWidget(vista)
     _esperar(qtbot, vista)
-    antes = sum(n for _, n, _ in vista.barra_estados.segmentos())
+    antes = sum(n for _, n, _ in vista.grafico_flota.segmentos())
     catalogo.crear_equipo(ctx, "TAL-009", "Taladro nuevo", catalogo.categorias(ctx)[0]["id"],
                           20_000, ctx.hoy())
     vista.al_volver()
     _esperar(qtbot, vista)
-    assert sum(n for _, n, _ in vista.barra_estados.segmentos()) == antes + 1
+    assert sum(n for _, n, _ in vista.grafico_flota.segmentos()) == antes + 1
 
 
 def test_error_se_muestra(qtbot, ctx_factory, monkeypatch):
@@ -106,3 +107,43 @@ def test_atributos_existen_antes_de_cargar(qtbot, ctx_factory, monkeypatch):
     qtbot.addWidget(vista)
     _esperar(qtbot, vista)
     assert vista.botones_acceso == {} and vista.tarjetas == []
+
+
+def test_tablero_del_centro_de_control(qtbot, ctx_factory, datos_base, fabrica):
+    from datetime import date
+    from alquiler.models import Alquiler, Cliente, Equipo, EstadoAlquiler, EstadoEquipo
+    with fabrica() as s:  # un alquiler vencido para que el monitor tenga actividad
+        equipo = s.query(Equipo).filter_by(codigo="TAL-001").one()
+        equipo.estado = EstadoEquipo.ALQUILADO
+        s.add(Alquiler(cliente=s.query(Cliente).first(), equipo=equipo, fecha_inicio=date(2026, 3, 1),
+                       fecha_fin_prevista=date(2026, 3, 8), tarifa_diaria=25_000, costo_estimado=175_000,
+                       estado=EstadoAlquiler.ACTIVO))
+        s.commit()
+    vista = VistaInicio(ctx_factory("admin"))
+    qtbot.addWidget(vista)
+    _esperar(qtbot, vista)
+    assert vista.etiqueta_titulo.text() == "Tablero de control"
+    assert (vista.grafico_flota.texto_centro, vista.grafico_flota.subtexto_centro) == (
+        "50 %", "Utilización total")
+    assert [n for n, _ in vista.grafico_tendencia.series_datos()] == ["Iniciados", "Devueltos"]
+    assert vista.grafico_tendencia.series_datos()[0][1][-1] == 1  # marzo: un alquiler iniciado
+    assert [b.value() for b in vista.barras_categoria] == [50]
+    assert vista.tabla_monitor.filas_mostradas() == 1
+    assert vista.tabla_monitor.texto(0, 3) == "VENCIDO"
+    assert all(t.etiqueta_icono is not None for t in vista.tarjetas)
+
+
+def test_tablero_animado_termina_en_los_valores_reales(qtbot, ctx_factory, datos_base, monkeypatch):
+    """Con animaciones: las cifras cuentan y las barras se llenan, pero acaban en el dato exacto."""
+    from alquiler.ui import animacion
+    monkeypatch.setattr(animacion, "_forzado", True)
+    ctx = ctx_factory("admin")
+    esperadas = [str(d["valor"]) for d in inicio.tarjetas_kpi(inicio.resumen(ctx), {
+        s.clave for s in secciones_para(ctx)})]
+    vista = VistaInicio(ctx)
+    qtbot.addWidget(vista)
+    vista.show()
+    _esperar(qtbot, vista)
+    qtbot.waitUntil(lambda: [t.etiqueta_valor.text() for t in vista.tarjetas] == esperadas,
+                    timeout=4000)
+    assert vista.animaciones  # la vista guarda sus animaciones en curso

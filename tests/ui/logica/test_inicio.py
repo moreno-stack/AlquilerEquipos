@@ -58,12 +58,13 @@ def test_saludo_con_nombre(ctx_factory, datos_base):
 
 def test_admin_ve_todos_los_bloques(ctx_factory, datos_base):
     assert set(inicio.resumen(ctx_factory("admin"), ahora=MANANA)) == {
-        "saludo", "flota", "operacion", "mantenimiento", "ingresos_mes", "alerta_ia"}
+        "saludo", "flota", "operacion", "mantenimiento", "ingresos_mes", "alerta_ia",
+        "tendencia", "eventos"}
 
 
 def test_empleado_sin_ingresos(ctx_factory, datos_base):
     assert set(inicio.resumen(ctx_factory("empleado"), ahora=MANANA)) == {
-        "saludo", "flota", "operacion", "mantenimiento", "alerta_ia"}
+        "saludo", "flota", "operacion", "mantenimiento", "alerta_ia", "tendencia", "eventos"}
 
 
 def test_cliente_solo_lo_suyo(ctx_factory, datos_base):
@@ -186,3 +187,71 @@ def test_mis_alquileres(ctx_factory, datos_base, fabrica):
     claves = [t["clave"] for t in inicio.tarjetas_kpi(
         inicio.resumen(ctx_factory("cliente"), ahora=MANANA), {"perfil"})]
     assert claves == ["mis_activos", "mi_saldo"]
+
+
+# ---------------------------------------------------------------- centro de control
+def test_flota_por_categoria_y_utilizacion(ctx_factory, mas_equipos, fabrica):
+    with fabrica() as s:
+        s.query(Equipo).filter_by(codigo="TAL-001").one().estado = EstadoEquipo.ALQUILADO
+        s.query(Equipo).filter_by(codigo="TAL-002").one().estado = EstadoEquipo.RESERVADO
+        s.commit()
+    flota = inicio.resumen(ctx_factory("admin"), ahora=MANANA)["flota"]
+    assert flota["utilizacion"] == 40  # (1 alquilado + 1 reservado) / 5 equipos
+    assert flota["por_categoria"] == [
+        {"categoria": "Taladros", "alquilados": 1, "total": 5, "porcentaje": 20}]
+
+
+def test_utilizacion_sin_equipos_es_cero(ctx_factory):
+    flota = inicio.resumen(ctx_factory("admin"), ahora=MANANA)["flota"]
+    assert flota["utilizacion"] == 0 and flota["por_categoria"] == []
+
+
+def test_tendencia_seis_meses(ctx_factory, mas_equipos, fabrica):
+    with fabrica() as s:
+        _alquiler(s, "TAL-001", date(2026, 3, 12))                                   # marzo
+        _alquiler(s, "TAL-002", date(2026, 2, 20), inicio_=date(2026, 2, 10))       # febrero
+        _alquiler(s, "TAL-003", date(2025, 6, 5), inicio_=date(2025, 6, 1))         # fuera de rango
+        _alquiler(s, "TAL-004", date(2026, 3, 20), EstadoAlquiler.CANCELADO)         # no cuenta
+        s.commit()
+    t = inicio.resumen(ctx_factory("empleado"), ahora=MANANA)["tendencia"]
+    assert t["meses"] == ["oct", "nov", "dic", "ene", "feb", "mar"]
+    assert t["iniciados"] == [0, 0, 0, 0, 1, 1]
+    assert t["devueltos"] == [0, 0, 0, 0, 0, 0]
+
+
+def test_eventos_ordenados_por_prioridad(ctx_factory, mas_equipos, fabrica):
+    with fabrica() as s:
+        _alquiler(s, "TAL-001", date(2026, 3, 15))                                   # al día
+        _alquiler(s, "TAL-002", date(2026, 3, 7))                                    # vencido 3 días
+        _alquiler(s, "TAL-003", date(2026, 3, 10))                                   # vence hoy
+        _alquiler(s, "TAL-004", date(2026, 3, 20), EstadoAlquiler.RESERVADO, date(2026, 3, 12))
+        s.commit()
+    eventos = inicio.resumen(ctx_factory("empleado"), ahora=MANANA)["eventos"]
+    assert [(e["modulo"], e["estado"]) for e in eventos] == [
+        ("Alquileres", "VENCIDO"), ("Alquileres", "HOY"), ("Reservas", "PENDIENTE"),
+        ("Alquileres", "OK")]
+    assert eventos[0]["mensaje"] == "TAL-002 · Ana Pérez — devolución vencida hace 3 días"
+    assert eventos[0]["fecha"] == "07/03/2026" and eventos[0]["tono"] == "peligro"
+    assert eventos[2]["mensaje"] == "TAL-004 reservado para Ana Pérez desde el 12/03/2026"
+
+
+def test_eventos_incluyen_mantenimiento_y_tienen_limite(ctx_factory, mas_equipos, fabrica):
+    from alquiler.models import Mantenimiento, TipoMantenimiento
+    with fabrica() as s:
+        equipo = s.query(Equipo).filter_by(codigo="TAL-005").one()
+        s.add(Mantenimiento(equipo=equipo, tipo=TipoMantenimiento.PREVENTIVO,
+                            fecha_inicio=date(2026, 3, 9), descripcion="Revisión"))
+        for codigo in ("TAL-001", "TAL-002", "TAL-003", "TAL-004"):
+            for _ in range(3):
+                _alquiler(s, codigo, date(2026, 3, 15))
+        s.commit()
+    eventos = inicio.resumen(ctx_factory("admin"), ahora=MANANA)["eventos"]
+    assert len(eventos) == inicio.MAX_EVENTOS == 8
+    assert eventos[0] == {"fecha": "09/03/2026", "modulo": "Mantenimiento",
+                          "mensaje": "TAL-005 en taller (Preventivo)", "estado": "EN CURSO",
+                          "tono": "aviso"}
+
+
+def test_cliente_no_ve_tendencia_ni_eventos(ctx_factory, datos_base):
+    r = inicio.resumen(ctx_factory("cliente"), ahora=MANANA)
+    assert "tendencia" not in r and "eventos" not in r
