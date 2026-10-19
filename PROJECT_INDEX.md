@@ -58,7 +58,7 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 |---|---|
 | `alquiler/services/__init__.py` | `obtener(session, Modelo, id)` y `pesos()` (formato COP). |
 | `alquiler/services/equipos.py` | `TRANSICIONES` (máquina de estados, spec §4.3), `transicionar`, categorías y CRUD. El catálogo del cliente solo muestra equipos disponibles. |
-| `alquiler/services/clientes.py` | Registro, edición (el cliente solo su contacto), baja lógica (también bloquea su usuario) e historial. |
+| `alquiler/services/clientes.py` | Registro, autorregistro desde la portada (cliente + usuario en una sola transacción; no reclama documentos existentes), edición (el cliente solo su contacto), baja lógica (también bloquea su usuario) e historial. |
 | `alquiler/services/alquileres.py` | Costos (`dias_contratados`, `calcular_costo`), crear (activo o reservado), entregar o cancelar una reserva, pagos limitados al saldo y vencidos. |
 | `alquiler/services/devoluciones.py` | `liquidar` (retraso, mora con redondeo half-up, total) y `registrar_devolucion`: contadores de uso; con daños, abre un correctivo. |
 | `alquiler/services/mantenimiento.py` | `abrir` (interno), abrir y cerrar preventivo o correctivo, historial. No se abre sobre un equipo alquilado. |
@@ -101,8 +101,9 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `alquiler/ui/iconos.py` | Iconos vectoriales del menú (SVG en código, QtSvg) con color normal y de sección activa. |
 | `alquiler/ui/centro.py` | Piezas del centro de control: `FondoCosmico` (red de datos), `Panel` de vidrio, `aplicar_brillo` (neón), `GraficoDona` y `GraficoTendencia`. |
 | `alquiler/ui/widgets.py` | `ESTILO` (desde el tema), `marca`, `TarjetaKPI` y `BarraEstados` (Inicio), `configurar_locale` (es-CO), `Tabla`, `Insignia`, `TarjetaResultado`, `botones_dialogo` (protección contra doble clic) y `ejecutar_accion`. |
-| `alquiler/ui/login.py` | Portada de ingreso: fondo cósmico animado, marca con degradado, beneficios y panel de vidrio con usuario y contraseña (tiembla ante un error). |
+| `alquiler/ui/login.py` | Portada de ingreso: fondo cósmico animado, marca con degradado, beneficios y panel de vidrio con usuario y contraseña (tiembla ante un error) o formulario «Crear cuenta» de cliente. |
 | `alquiler/ui/animacion.py` | Animaciones: fundido y entrada escalonada, cifras que cuentan, barras que se llenan, temblor y brillo al pasar el cursor; duraciones de `tokens.css`, apagadas sin pantalla o con `ALQUILER_ANIMACIONES=0`. |
+| `alquiler/ui/logo.py` | Logo "cubo neural" dibujado en vector: cubo neón con nodos y núcleo de IA que late; `Logo` (widget), `pixmap_logo` e `icono_app` (ícono de las ventanas). |
 | `alquiler/ui/ventana.py` | Ventana principal: barra lateral por rol, vistas perezosas, recarga al volver a una sección y espera de tareas al cerrar. |
 | `alquiler/ui/vistas/__init__.py` | Paquete de vistas. |
 | `alquiler/ui/vistas/equipos.py` | Catálogo, `PanelEstados` (máquina de estados visual) y diálogos de equipo, categoría y mantenimiento. |
@@ -186,7 +187,7 @@ la suite. La API de Groq se reemplaza por `ClienteFalso` o por `httpx.MockTransp
 | `tests/test_aislamiento_red.py` | La red está bloqueada durante las pruebas. |
 | `tests/test_documentacion.py` | Este índice está sincronizado con el código. |
 | `tests/services/test_equipos.py` | Las 11 transiciones válidas y las 9 inválidas, CRUD y catálogo por rol. |
-| `tests/services/test_clientes.py` | Edición por rol, baja (bloquea el usuario) e historial. |
+| `tests/services/test_clientes.py` | Edición por rol, baja (bloquea el usuario), historial y autorregistro (todo o nada, sin reclamar documentos existentes). |
 | `tests/services/test_alquileres.py` | Costos, reservas, cancelación, pagos ≤ saldo y vencidos. |
 | `tests/services/test_devoluciones.py` | Mora half-up, daños → correctivo y doble devolución rechazada. |
 | `tests/services/test_mantenimiento.py` | Abrir y cerrar, equipo alquilado rechazado y rehabilitación. |
@@ -199,7 +200,7 @@ la suite. La API de Groq se reemplaza por `ClienteFalso` o por `httpx.MockTransp
 | `tests/ai/test_prompts.py` | El esquema inyectado excluye `usuario`; el prompt incluye la fecha y las reglas; esquemas JSON estrictos. |
 | `tests/ai/test_llm.py` | Petición a Groq (modelo, `response_format` estricto), parseo, respuesta truncada, traducción de errores y reintentos (`httpx.MockTransport`). |
 | `tests/ai/test_consultas.py` | Flujo en dos partes, aclaración, sin datos, corrección de SQL destructivo, errores y predefinidas. |
-| `tests/ui/logica/test_contexto.py` | Rollback, sesión inválida, secciones por rol y formato. |
+| `tests/ui/logica/test_contexto.py` | Rollback, sesión inválida, secciones por rol, formato y registro con entrada directa. |
 | `tests/ui/logica/test_catalogo.py` | Lógica de equipos y mantenimiento. |
 | `tests/ui/logica/test_personas.py` | Lógica de clientes, usuarios y perfil. |
 | `tests/ui/logica/test_inicio.py` | Bloques por rol, conteos (vencidos frente a "vencen hoy"), ingresos del mes, base vacía, destinos visibles y que Inicio no persiste recomendaciones. |
@@ -210,7 +211,8 @@ la suite. La API de Groq se reemplaza por `ClienteFalso` o por `httpx.MockTransp
 | `tests/ui/test_iconos.py` | Un icono por sección, se dibuja y cambia de color al seleccionarse; el menú lateral los muestra. |
 | `tests/ui/test_widgets_centro.py` | Fondo cósmico determinista, panel de vidrio, brillo neón, dona (segmentos, centro, vacía), tendencia (series, recarga sin acumular) y KPI con ícono. |
 | `tests/ui/test_animacion.py` | Duraciones de los tokens, apagado sin pantalla y por variable, contador con formato, fundido que restaura el brillo, cascada, barras, temblor, brillo al pasar, fondo que flota, dona que gira y tendencia animada. |
-| `tests/ui/test_portada.py` | Portada de ingreso: estructura, campos con ícono, login correcto, temblor ante error y entrada animada. |
+| `tests/ui/test_portada.py` | Portada de ingreso: estructura, campos con ícono, login correcto, temblor ante error, entrada animada y crear cuenta de cliente. |
+| `tests/ui/test_logo.py` | Geometría del cubo (8 vértices, 12 aristas, 3 ocultas), dibujo a varios tamaños, ícono de la aplicación, latido animado y uso en marca, portada y ventanas. |
 | `tests/ui/test_widgets_inicio.py` | `TarjetaKPI` (clic navega solo con destino) y `BarraEstados` (segmentos, caso vacío, pintado). |
 | `tests/ui/test_widgets.py` | Tabla, insignias, tarjeta de IA y configuración regional es-CO. |
 | `tests/ui/test_ventana.py` | Login, barra lateral por rol, vistas perezosas y oferta de datos demo. |

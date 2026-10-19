@@ -59,3 +59,39 @@ def test_entrada_animada_al_mostrarse(portada, monkeypatch):
     monkeypatch.setattr(animacion, "_forzado", True)
     portada.show()
     assert isinstance(portada.panel.graphicsEffect(), QGraphicsOpacityEffect)
+
+
+def _llenar_registro(dlg, **cambios):
+    datos = dict(nombre="Marta Ruiz", documento="1085777", telefono="3115550000", email="",
+                 usuario="marta", password="clave-segura", confirmacion="clave-segura")
+    datos.update(cambios)
+    for clave, valor in datos.items():
+        dlg.campos_registro[clave].setText(valor)
+
+
+def test_ir_al_registro_y_volver(portada):
+    assert portada.pila_ingreso.currentWidget() is portada.vista_login
+    portada.enlace_registro.click()
+    assert portada.pila_ingreso.currentWidget() is portada.vista_registro
+    assert set(portada.campos_registro) == {"nombre", "documento", "telefono", "email", "usuario",
+                                            "password", "confirmacion"}
+    portada.enlace_volver.click()
+    assert portada.pila_ingreso.currentWidget() is portada.vista_login
+
+
+def test_crear_cuenta_entra_como_cliente(portada):
+    from alquiler.models import Rol
+    portada.enlace_registro.click()
+    _llenar_registro(portada)
+    portada.boton_crear_cuenta.click()
+    assert portada.result() == QDialog.DialogCode.Accepted
+    assert portada.contexto.usuario.username == "marta"
+    assert portada.contexto.usuario.rol == Rol.CLIENTE.value
+
+
+def test_crear_cuenta_con_error_lo_explica(portada):
+    portada.enlace_registro.click()
+    _llenar_registro(portada, confirmacion="otra-clave")
+    portada.boton_crear_cuenta.click()
+    assert "no coinciden" in portada.error_registro.text()
+    assert portada.contexto is None and portada.result() != QDialog.DialogCode.Accepted

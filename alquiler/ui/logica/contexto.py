@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from alquiler.auth import PERMISOS_POR_ROL, autenticar
 from alquiler.config import Config
-from alquiler.errors import PermisoDenegado
+from alquiler.errors import PermisoDenegado, ReglaNegocioError
 from alquiler.models import Usuario
 
 T = TypeVar("T")
@@ -76,4 +76,18 @@ def iniciar_sesion(fabrica_sesion: sessionmaker[Session], config: Config, userna
                    reloj: Callable[[], date] = date.today) -> Contexto:
     with fabrica_sesion() as sesion:
         usuario = UsuarioSesion.desde(autenticar(sesion, username, password))
+    return Contexto(fabrica_sesion, usuario, config, cliente_llm, reloj)
+
+
+def registrar_y_entrar(fabrica_sesion: sessionmaker[Session], config: Config, *, documento: str,
+                       nombre: str, telefono: str, email: str, username: str, password: str,
+                       confirmacion: str, cliente_llm=None,
+                       reloj: Callable[[], date] = date.today) -> Contexto:
+    """Crea la cuenta de cliente desde la portada y abre su sesión."""
+    from alquiler.services.clientes import autoregistrar_cliente
+    if password != confirmacion:
+        raise ReglaNegocioError("Las contraseñas no coinciden.")
+    with fabrica_sesion() as sesion:
+        usuario = UsuarioSesion.desde(autoregistrar_cliente(
+            sesion, documento, nombre, telefono, username, password, email=email or None))
     return Contexto(fabrica_sesion, usuario, config, cliente_llm, reloj)

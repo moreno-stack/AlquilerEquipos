@@ -86,7 +86,10 @@ def crear_usuario(
     rol: Rol,
     nombre_completo: str,
     cliente_id: int | None = None,
+    confirmar: bool = True,
 ) -> Usuario:
+    """Crea el usuario; con ``confirmar=False`` lo deja en la sesión sin hacer commit (para
+    guardarlo junto con otros cambios en una sola transacción)."""
     username = _normalizar(username)
     if not username:
         raise ReglaNegocioError("El nombre de usuario es obligatorio.")
@@ -110,7 +113,8 @@ def crear_usuario(
         cliente_id=cliente_id,
     )
     session.add(usuario)
-    session.commit()
+    if confirmar:
+        session.commit()
     return usuario
 
 

@@ -5,9 +5,10 @@ import re
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
+from alquiler import auth
 from alquiler.auth import Permiso, requerir_permiso, tiene_permiso
 from alquiler.errors import PermisoDenegado, ReglaNegocioError
-from alquiler.models import Alquiler, Cliente, EstadoAlquiler, Usuario
+from alquiler.models import Alquiler, Cliente, EstadoAlquiler, Rol, Usuario
 from alquiler.services import obtener
 
 _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -57,6 +58,39 @@ def registrar_cliente(
     session.add(cliente)
     session.commit()
     return cliente
+
+
+def autoregistrar_cliente(
+    session: Session,
+    documento: str,
+    nombre: str,
+    telefono: str,
+    username: str,
+    password: str,
+    email: str | None = None,
+    direccion: str | None = None,
+) -> Usuario:
+    """Registro público desde la portada: crea el cliente y su usuario (solo rol cliente).
+
+    Todo o nada: si algo no es válido no queda ni el cliente ni el usuario. Un documento que ya
+    está registrado no se puede reclamar (daría acceso al historial de otra persona).
+    """
+    datos = _limpiar(dict(documento=documento, nombre=nombre, telefono=telefono,
+                          email=email, direccion=direccion))
+    if session.scalar(select(Cliente).where(Cliente.documento == datos["documento"])):
+        raise ReglaNegocioError("Ya existe un cliente con ese documento; pida al personal "
+                                "que le cree su usuario.")
+    try:
+        cliente = Cliente(**datos)
+        session.add(cliente)
+        session.flush()
+        usuario = auth.crear_usuario(session, username, password, Rol.CLIENTE, datos["nombre"],
+                                     cliente.id, confirmar=False)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    return usuario
 
 
 def actualizar_cliente(session: Session, actor: Usuario, cliente_id: int, **campos) -> Cliente:

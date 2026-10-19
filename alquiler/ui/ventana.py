@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (
 )
 
 from alquiler import __version__
-from alquiler.ui import animacion, iconos, tema, trabajador, widgets
+from alquiler.ui import animacion, iconos, logo, tema, trabajador, widgets
 from alquiler.ui.logica.contexto import Contexto
 from alquiler.ui.logica.navegacion import secciones_para
 
@@ -38,6 +38,7 @@ class VentanaPrincipal(QMainWindow):
         self.vistas_creadas: dict[str, QWidget] = {}
         self.animacion_seccion = None
         self.setWindowTitle("Sistema Inteligente de Alquiler de Equipos")
+        self.setWindowIcon(logo.icono_app())
         self.resize(1280, 800)
 
         lateral = QWidget()

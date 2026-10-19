@@ -168,12 +168,10 @@ QLabel { background: transparent; }
 #barraLateral::item:selected { background: {degradado}; color: {sobre_acento}; font-weight: 700; }
 #barraLateral::item:hover:!selected { background: {lateral_activo}; color: {texto}; }
 #marca { background: transparent; }
-#marcaCuadro { background: {degradado}; border-radius: 4px; }
 #marcaNombre { color: {texto}; font-size: 13pt; font-weight: 700; }
-#submarca { color: {texto_lateral}; font-size: 8pt; padding: 2px 18px 16px 42px; }
+#submarca { color: {texto_lateral}; font-size: 8pt; padding: 0px 18px 16px 54px; }
 
 /* portada de ingreso */
-#insigniaPortada { background: {degradado}; border-radius: 16px; }
 #antetituloPortada { color: {acento}; font-size: 10pt; font-weight: 700; letter-spacing: 4px; }
 #tituloPortada { font-size: 34pt; font-weight: 800; }
 #lemaPortada { color: {texto_secundario}; font-size: 12pt; }
@@ -184,6 +182,9 @@ QLabel { background: transparent; }
 QLineEdit#campoPortada { background: {vidrio_alto}; border: 1px solid {vidrio_borde}; border-radius: 10px;
                          min-height: 34px; padding: 4px 10px; }
 QLineEdit#campoPortada:focus { border: 1px solid {acento}; }
+QPushButton#enlace { background: transparent; border: none; color: {acento}; font-weight: 600;
+                     padding: 4px; }
+QPushButton#enlace:hover { color: {acento_hover}; text-decoration: underline; }
 
 /* encabezados y textos */
 #tituloVista { font-size: 18pt; font-weight: 600; color: {texto}; }

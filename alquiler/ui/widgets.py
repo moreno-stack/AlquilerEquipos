@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 
 from alquiler.errors import ReglaNegocioError
 from alquiler.ui import animacion, iconos, tema
+from alquiler.ui.logo import Logo
 from alquiler.ui.centro import (  # noqa: F401  (se reexportan para las vistas)
     FondoCosmico,
     GraficoDona,
@@ -89,15 +90,13 @@ def encabezado(titulo: str, subtitulo: str = "") -> QWidget:
 
 
 def marca(texto: str) -> QWidget:
-    """Logotipo de texto: cuadro ámbar + nombre (barra lateral y login)."""
+    """Logotipo: cubo neural + nombre (barra lateral)."""
     caja = QWidget()
     caja.setObjectName("marca")
     capa = QHBoxLayout(caja)
     capa.setContentsMargins(18, 20, 18, 0)
     capa.setSpacing(10)
-    cuadro = QFrame()
-    cuadro.setObjectName("marcaCuadro")
-    cuadro.setFixedSize(14, 14)
+    cuadro = Logo(26)
     nombre = QLabel(texto)
     nombre.setObjectName("marcaNombre")
     capa.addWidget(cuadro)

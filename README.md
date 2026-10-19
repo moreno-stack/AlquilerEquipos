@@ -160,6 +160,8 @@ Los datos demo también se pueden cargar desde la terminal en una base vacía:
 | `empleado` | `empleado123` | Empleado | Equipos, mantenimiento, clientes, alquileres, devoluciones, reservas y Análisis IA |
 | `cliente` | `cliente123` | Cliente | Catálogo de equipos disponibles y Mi perfil (sus datos de contacto y su historial) |
 
+**Crear una cuenta propia.** En la portada, el enlace *¿No tiene cuenta? Regístrese como cliente* abre el formulario *Crear cuenta* (nombre, documento, teléfono, correo opcional, usuario y contraseña). Al terminar, la persona entra directo con rol **Cliente**. Solo se crean cuentas de cliente; las de empleado y administrador las crea un administrador en *Usuarios*. Si el documento ya pertenece a un cliente registrado por el personal, el sistema no deja reclamarlo: el personal le crea el usuario.
+
 > **Seguridad.** Estas credenciales son de demostración. En un uso real:
 > - defina `ALQUILER_ADMIN_PASSWORD` antes del primer arranque o cambie la contraseña en *Mi perfil*;
 > - desactive las cuentas `empleado` y `cliente` desde *Usuarios*.

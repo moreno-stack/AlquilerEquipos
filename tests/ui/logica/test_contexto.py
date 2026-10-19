@@ -90,3 +90,22 @@ def test_formato_pesos_fecha_nivel():
     assert formato.fecha(date(2026, 3, 9)) == "09/03/2026"
     assert formato.fecha(None) == ""
     assert formato.nivel("alta") == "Alta"
+
+
+def test_registrar_y_entrar(fabrica, config):
+    from alquiler.models import Rol
+    from alquiler.ui.logica.contexto import registrar_y_entrar
+    ctx = registrar_y_entrar(fabrica, config, documento="77", nombre="Marta Ruiz", telefono="311",
+                             email="", username="marta", password="clave-segura",
+                             confirmacion="clave-segura")
+    assert ctx.usuario.username == "marta" and ctx.usuario.rol == Rol.CLIENTE.value
+
+
+def test_registrar_contrasenas_distintas(fabrica, config):
+    import pytest
+    from alquiler.errors import ReglaNegocioError
+    from alquiler.ui.logica.contexto import registrar_y_entrar
+    with pytest.raises(ReglaNegocioError, match="no coinciden"):
+        registrar_y_entrar(fabrica, config, documento="77", nombre="Marta", telefono="311",
+                           email="", username="marta", password="clave-segura",
+                           confirmacion="otra-clave")

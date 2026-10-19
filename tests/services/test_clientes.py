@@ -126,3 +126,46 @@ def test_desactivar_cliente_bloquea_su_usuario(session, empleado, cliente, usuar
     # Un cliente dado de baja no debe poder seguir entrando al sistema.
     svc.desactivar_cliente(session, empleado, cliente.id)
     assert usuario_cliente.activo is False
+
+
+# ---------------------------------------------------------------- autorregistro desde la portada
+def _datos(**cambios):
+    datos = dict(documento=" 1085777 ", nombre=" Marta Ruiz ", telefono="3115550000",
+                 email="marta@correo.co", username=" Marta ", password="clave-segura")
+    return {**datos, **cambios}
+
+
+def test_autoregistro_crea_cliente_y_usuario(session):
+    from alquiler.auth import autenticar
+    from alquiler.models import Rol
+    usuario = svc.autoregistrar_cliente(session, **_datos())
+    assert (usuario.username, usuario.rol, usuario.nombre_completo) == ("marta", Rol.CLIENTE, "Marta Ruiz")
+    assert (usuario.cliente.documento, usuario.cliente.telefono) == ("1085777", "3115550000")
+    assert autenticar(session, "marta", "clave-segura").id == usuario.id
+
+
+def test_autoregistro_no_reclama_un_cliente_existente(session, cliente):
+    with pytest.raises(ReglaNegocioError, match="pida al personal"):
+        svc.autoregistrar_cliente(session, **_datos(documento="1085000001"))
+
+
+@pytest.mark.parametrize("cambio, mensaje", [
+    ({"password": "corta"}, "al menos"),
+    ({"username": "   "}, "usuario"),
+    ({"telefono": " "}, "telefono"),
+    ({"email": "sin-arroba"}, "correo"),
+])
+def test_autoregistro_valida_y_no_deja_nada_a_medias(session, cambio, mensaje):
+    from sqlalchemy import func, select
+    from alquiler.models import Usuario
+    with pytest.raises(ReglaNegocioError, match=mensaje):
+        svc.autoregistrar_cliente(session, **_datos(**cambio))
+    assert session.scalar(select(func.count()).select_from(Cliente)) == 0
+    assert session.scalar(select(func.count()).select_from(Usuario)) == 0
+
+
+def test_autoregistro_usuario_repetido_no_crea_cliente(session, empleado):
+    from sqlalchemy import func, select
+    with pytest.raises(ReglaNegocioError, match="ya existe"):
+        svc.autoregistrar_cliente(session, **_datos(username=empleado.username))
+    assert session.scalar(select(func.count()).select_from(Cliente)) == 0
