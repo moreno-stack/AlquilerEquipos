@@ -78,6 +78,7 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `alquiler/ai/prompts.py` | Esquema generado desde `Base.metadata` (sin `usuario`), reglas de negocio, protocolo de ambigüedad y esquemas JSON. |
 | `alquiler/ai/llm.py` | `ClienteGroq`: SDK `groq` con `json_schema` estricto, timeout y reintentos; los errores se traducen a `ErrorIA`. |
 | `alquiler/ai/consultas.py` | Orquestador Text-to-SQL: generar → validar y ejecutar (una corrección) → redactar. Devuelve `RespuestaConsulta` con estado y las 6 consultas predefinidas. |
+| `alquiler/ai/asistente.py` | Asistente «Cubi»: herramientas de solo lectura por rol (catálogo, mis alquileres, resumen, vencidos, estimaciones, ingresos, consulta libre de admin), protocolo JSON con Groq (máx. 3 herramientas) y preguntas rápidas sin IA. |
 
 ## Fase 4 — Interfaz, concurrencia y datos demo
 
@@ -95,6 +96,7 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `alquiler/ui/logica/operaciones.py` | Cotización, alquileres con situación, vista previa de la devolución, pagos y reservas clasificadas. |
 | `alquiler/ui/logica/reportes.py` | KPIs, ingresos por mes (mes parcial con `*`), uso de flota y vencidos. |
 | `alquiler/ui/logica/ia.py` | Tarjetas de resultados de IA y adaptación de la consola. |
+| `alquiler/ui/logica/asistente.py` | Adapta las respuestas de Cubi para la vista: texto, emoción, fuentes legibles y sugerencias. |
 | `alquiler/ui/logica/inicio.py` | Pantalla de Inicio: `resumen(ctx)` por permisos (flota, operación, mantenimiento, ingresos del mes, alerta de IA sin persistir, "mis alquileres"), `tarjetas_kpi`, `fecha_larga` y `saludo_para`. |
 | `alquiler/ui/trabajador.py` | `ejecutar_en_segundo_plano` con QThreadPool: el resultado vuelve al hilo GUI y se descarta si el widget ya se destruyó. |
 | `alquiler/ui/tema.py` | Traduce a Qt los tokens de `diseno/tokens.css` (paleta, estados, QSS, `aplicar(app)` con Fusion oscuro); no escribe ningún color a mano. |
@@ -200,7 +202,9 @@ la suite. La API de Groq se reemplaza por `ClienteFalso` o por `httpx.MockTransp
 | `tests/ai/test_prompts.py` | El esquema inyectado excluye `usuario`; el prompt incluye la fecha y las reglas; esquemas JSON estrictos. |
 | `tests/ai/test_llm.py` | Petición a Groq (modelo, `response_format` estricto), parseo, respuesta truncada, traducción de errores y reintentos (`httpx.MockTransport`). |
 | `tests/ai/test_consultas.py` | Flujo en dos partes, aclaración, sin datos, corrección de SQL destructivo, errores y predefinidas. |
+| `tests/ai/test_asistente.py` | Herramientas por rol, privacidad del cliente, uso de herramientas, permisos negados, límite de pasos, historial recortado, errores y preguntas rápidas. |
 | `tests/ui/logica/test_contexto.py` | Rollback, sesión inválida, secciones por rol, formato y registro con entrada directa. |
+| `tests/ui/logica/test_asistente_logica.py` | Turno de conversación como dict para la vista, sugerencias y respuesta rápida, y modo sin clave. |
 | `tests/ui/logica/test_catalogo.py` | Lógica de equipos y mantenimiento. |
 | `tests/ui/logica/test_personas.py` | Lógica de clientes, usuarios y perfil. |
 | `tests/ui/logica/test_inicio.py` | Bloques por rol, conteos (vencidos frente a "vencen hoy"), ingresos del mes, base vacía, destinos visibles y que Inicio no persiste recomendaciones. |
