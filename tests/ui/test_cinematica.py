@@ -60,3 +60,17 @@ def test_glitch_solo_mientras_se_escribe_y_es_determinista():
     assert any(d != 0 for d in durante) and all(abs(d) <= cine.GLITCH_MAX for d in durante)
     assert durante == [cine.glitch(t) for t in range(2800, 3800, 40)]
     assert cine.glitch(2000) == 0 and cine.glitch(4200) == 0
+
+
+@pytest.mark.parametrize("con_clave, estado", [(True, "CLAVE CONFIGURADA"), (False, "MODO LOCAL")])
+def test_lineas_de_arranque_dicen_la_verdad_sobre_la_ia(con_clave, estado):
+    lineas = cine.lineas_arranque(ia_configurada=con_clave)
+    assert len(lineas) == 4 and lineas[0] == ("Base de datos SQLite", "OK")
+    assert ("Asistente Cubi · Groq", estado) in lineas
+
+
+def test_lineas_y_barra_de_carga_avanzan():
+    assert cine.escena(3100).lineas == 0 and cine.escena(3100).progreso == 0
+    medio = cine.escena(4000)
+    assert 0 < medio.lineas < 4 and 0 < medio.progreso < 1
+    assert cine.escena(4900).lineas == 4 and cine.escena(4900).progreso == 1

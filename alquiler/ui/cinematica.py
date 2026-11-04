@@ -50,6 +50,8 @@ class Escena:
     destello: float         # destello de luz: sube y baja (0-1-0)
     titulo: str             # parte del título ya escrita
     subtitulo: str          # aparece entero cuando el título termina
+    lineas: int             # líneas de arranque visibles (0-4)
+    progreso: float         # barra de carga (0-1)
 
 
 def escena(t: float) -> Escena:
@@ -61,8 +63,23 @@ def escena(t: float) -> Escena:
         nucleo=tramo("nucleo", t),
         titulo=TITULO[:int(len(TITULO) * tramo("titulo", t))],
         subtitulo=SUBTITULO if tramo("titulo", t) >= 1 else "",
+        lineas=min(LINEAS, int(LINEAS * tramo("arranque", t) * 1.25)),
+        progreso=tramo("arranque", t),
         destello=1 - abs(2 * tramo("destello", t) - 1) if 0 < tramo("destello", t) < 1 else 0.0,
     )
+
+
+LINEAS = 4
+
+
+def lineas_arranque(ia_configurada: bool) -> list[tuple[str, str]]:
+    """Lo que muestra el arranque; el estado de la IA es el real (no finge conexión)."""
+    return [
+        ("Base de datos SQLite", "OK"),
+        ("Motor de IA explicable", "LISTO"),
+        ("Asistente Cubi · Groq", "CLAVE CONFIGURADA" if ia_configurada else "MODO LOCAL"),
+        ("Interfaz centro de control", "OK"),
+    ]
 
 
 GLITCH_MAX = 6  # px de separación entre las copias cian y púrpura del título
