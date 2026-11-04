@@ -57,3 +57,20 @@ def test_reproduce_en_tiempo_real_y_cierra_sola(qtbot, monkeypatch):
     v.reproducir()
     assert v.reproduciendo()
     qtbot.waitUntil(lambda: v.result() == tr.QDialog.DialogCode.Accepted, timeout=3000)
+
+
+@pytest.mark.parametrize("tecla", ["Escape", "Return", "Space"])
+def test_se_salta_con_teclas(qtbot, tecla):
+    from PySide6.QtCore import Qt
+    v = _ventana(qtbot)
+    v.reproducir()
+    qtbot.keyClick(v, getattr(Qt.Key, f"Key_{tecla}"))
+    assert v.result() == tr.QDialog.DialogCode.Accepted and not v.reproduciendo()
+
+
+def test_se_salta_con_clic(qtbot):
+    from PySide6.QtCore import Qt
+    v = _ventana(qtbot)
+    v.reproducir()
+    qtbot.mouseClick(v, Qt.MouseButton.LeftButton)
+    assert v.result() == tr.QDialog.DialogCode.Accepted

@@ -96,6 +96,21 @@ class TransicionSesion(QDialog):
         if not self.reproduciendo() and self.result() == 0:
             self.reproducir()
 
+    def saltar(self) -> None:
+        """Termina ya: el tablero aparece sin esperar."""
+        self._reloj.stop()
+        self.accept()
+
+    def keyPressEvent(self, evento):
+        if evento.key() in (Qt.Key.Key_Escape, Qt.Key.Key_Return, Qt.Key.Key_Enter,
+                            Qt.Key.Key_Space):
+            self.saltar()  # Esc también continúa: nunca cancela la sesión
+        else:
+            super().keyPressEvent(evento)
+
+    def mousePressEvent(self, _evento):
+        self.saltar()
+
     def ir_a(self, t: float) -> None:
         self._escena = escena(min(float(t), DURACION), self._nombre)
         self.update()
