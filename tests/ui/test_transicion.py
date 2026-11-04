@@ -29,3 +29,23 @@ def test_pasos_con_datos_reales_de_la_cuenta():
     assert tr.pasos_sesion("cliente", 2, ia_configurada=True)[1:3] == [
         ("Permisos del rol", "2 SECCIONES"), ("Asistente Cubi", "GROQ")]
     assert tr.pasos_sesion("cliente", 1, True)[1][1] == "1 SECCIÓN"
+
+
+def _ventana(qtbot, **kw):
+    datos = dict(nombre="Ana", rol="cliente", secciones=2, ia_configurada=False)
+    datos.update(kw)
+    v = tr.TransicionSesion(**datos)
+    qtbot.addWidget(v)
+    v.resize(1280, 800)
+    return v
+
+
+import pytest  # noqa: E402
+
+
+@pytest.mark.parametrize("t", [0, 400, 1200, 2000, 2600, tr.DURACION])
+def test_cada_momento_se_pinta(qtbot, t):
+    v = _ventana(qtbot)
+    v.ir_a(t)
+    assert v.escena_actual().t == t
+    assert not v.grab().isNull()
