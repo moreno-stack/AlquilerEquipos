@@ -1,15 +1,16 @@
-# Construye la aplicación de escritorio para Windows y macOS y la publica como descarga
-# en "Releases" de GitHub.
+# Construye la aplicación de escritorio para Windows y macOS y la publica en "Releases".
 #
-# Cómo publicar una versión:   git tag v0.1.0   y luego   git push origin v0.1.0
-# (también se puede lanzar a mano desde la pestaña Actions → "Descargas" → Run workflow;
-#  así solo deja los archivos como artefactos, sin crear una Release).
+# No hay que crear etiquetas a mano: cada push a main construye y publica (o actualiza) la
+# Release "v<versión>", tomando la versión de alquiler/__init__.py. Para sacar una versión
+# nueva basta con subir __version__ (p. ej. "0.2.0"). También se puede lanzar a mano en
+# Actions → "Descargas" → Run workflow.
 
 name: Descargas
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
+    paths-ignore: ["**.md", "docs/**"]   # cambios solo de documentación no reconstruyen
   workflow_dispatch:
 
 permissions:
@@ -89,9 +90,14 @@ jobs:
   publicar:
     name: Publicar la Release
     needs: construir
-    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Leer la versión
+        id: version
+        run: echo "valor=$(python3 -c 'import re;print(re.search(r"__version__ = \"(.+?)\"", open("alquiler/__init__.py").read()).group(1))')" >> "$GITHUB_OUTPUT"
+
       - uses: actions/download-artifact@v4
         with:
           path: descargas
@@ -99,7 +105,11 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          name: Alquiler de Equipos ${{ github.ref_name }}
+          tag_name: v${{ steps.version.outputs.valor }}   # se crea sola si no existe
+          target_commitish: ${{ github.sha }}
+          name: Alquiler de Equipos v${{ steps.version.outputs.valor }}
+          make_latest: true
+          overwrite_files: true                          # cada push reemplaza los archivos
           files: descargas/*
           body: |
             ## Descargas
