@@ -87,7 +87,7 @@ Todo es opcional. Cada valor se puede dar de dos formas:
 Un valor inválido (por ejemplo `GROQ_TIMEOUT=0`) detiene el arranque con un mensaje que nombra la
 variable.
 
-**Animaciones.** La variable de entorno `ALQUILER_ANIMACIONES=0` apaga todo el movimiento, incluidas la cinemática de arranque y la transición de sesión. Sirve para equipos lentos o para quien prefiere una interfaz quieta. Solo se lee como variable de entorno, no desde `alquiler.env`.
+**Animaciones.** La interfaz tiene movimiento en casi todas las pantallas: pulsos de datos en el fondo de la portada, barra neón de carga y «Analizando…» mientras se calcula algo, tarjetas de IA en cascada, gráficos que crecen, tablas con fundido, barras que se llenan y un punto «en vivo» en el estado del sistema. Todo termina siempre en el dato exacto. La variable de entorno `ALQUILER_ANIMACIONES=0` apaga todo el movimiento, incluidas la cinemática de arranque y la transición de sesión. Sirve para equipos lentos o para quien prefiere una interfaz quieta. Solo se lee como variable de entorno, no desde `alquiler.env`.
 
 ### 3.1 Activar la IA con Groq (3 pasos)
 
