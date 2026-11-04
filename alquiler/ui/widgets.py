@@ -135,6 +135,7 @@ class Tabla(QTableView):
         self._modelo = QStandardItemModel(self)
         self._modelo.setSortRole(_ORDEN)
         self._filas: list[dict] = []
+        self.animacion_carga = None
         self.setModel(self._modelo)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
