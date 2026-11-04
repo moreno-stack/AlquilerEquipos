@@ -147,7 +147,8 @@ python -m alquiler
    - equipos en mantenimiento y fuera de servicio.
 
    La carga tarda unos segundos.
-4. Aparece el inicio de sesión.
+4. Se reproduce la **cinemática de arranque** (unos 5 segundos; se salta con clic, Enter o Esc). Muestra el estado real de la IA: *clave configurada* o *modo local*.
+5. Aparece la portada con el inicio de sesión.
 
 Los datos demo también se pueden cargar desde la terminal en una base vacía:
 `python -m alquiler.seed [--hoy AAAA-MM-DD] [--semilla 42] [--meses 18]`.
