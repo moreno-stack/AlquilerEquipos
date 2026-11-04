@@ -195,6 +195,7 @@ En un tema oscuro, la sombra apenas se ve: la profundidad la da el tono (§1.3).
 | Temblor | Panel de ingreso con usuario o contraseña incorrectos | `--duracion-lenta` + `--duracion-rapida` |
 | Red de datos que flota y nodos que laten | Fondo cósmico (portada y sistema) | Continua, solo mientras se ve |
 | Presentación y panel en cascada (160 ms) | Portada de ingreso | `--duracion-lenta` |
+| Cinemática de arranque: rejilla, red, cubo trazado, destello, título con glitch y líneas de arranque | Antes de la portada, una vez por arranque (se salta con clic, Enter o Esc) | ≈5,6 s (excepción: es una presentación, no una transición) |
 
 Equivalente de `prefers-reduced-motion`: la variable de entorno `ALQUILER_ANIMACIONES=0` apaga todo el movimiento (también se apaga sin pantalla, como en las pruebas). Cada animación termina siempre en el valor exacto, así que apagarla no cambia lo que se ve al final.
 
