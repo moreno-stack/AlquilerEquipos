@@ -29,6 +29,8 @@ def tramo(nombre: str, t: float) -> float:
 
 NODOS = 48  # nodos de la red de datos
 ARISTAS = 12  # aristas del cubo del logo
+TITULO = "ALQUILER DE EQUIPOS"
+SUBTITULO = "SISTEMA INTELIGENTE · CENTRO DE CONTROL"
 
 
 def orden_aristas() -> list[tuple[int, int]]:
@@ -46,6 +48,8 @@ class Escena:
     cubo: float             # aristas trazadas (0-12; la parte decimal es la que va a medias)
     nucleo: float           # brillo del núcleo de IA (0-1)
     destello: float         # destello de luz: sube y baja (0-1-0)
+    titulo: str             # parte del título ya escrita
+    subtitulo: str          # aparece entero cuando el título termina
 
 
 def escena(t: float) -> Escena:
@@ -55,5 +59,7 @@ def escena(t: float) -> Escena:
         nodos=round(NODOS * tramo("red", t)),
         cubo=ARISTAS * tramo("cubo", t),
         nucleo=tramo("nucleo", t),
+        titulo=TITULO[:int(len(TITULO) * tramo("titulo", t))],
+        subtitulo=SUBTITULO if tramo("titulo", t) >= 1 else "",
         destello=1 - abs(2 * tramo("destello", t) - 1) if 0 < tramo("destello", t) < 1 else 0.0,
     )

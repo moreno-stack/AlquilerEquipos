@@ -44,3 +44,12 @@ def test_nucleo_se_enciende_con_un_destello():
     assert antes.nucleo == 0 and antes.destello == 0
     assert pico.nucleo == 1 and pico.destello == pytest.approx(1)
     assert despues.nucleo == 1 and despues.destello == 0
+
+
+def test_titulo_se_escribe_letra_por_letra():
+    assert cine.escena(2700).titulo == ""
+    parcial = cine.escena(3300).titulo
+    assert parcial and cine.TITULO.startswith(parcial) and parcial != cine.TITULO
+    assert cine.escena(3900).titulo == cine.TITULO
+    assert cine.escena(3900).subtitulo == cine.SUBTITULO
+    assert cine.escena(3000).subtitulo == ""
