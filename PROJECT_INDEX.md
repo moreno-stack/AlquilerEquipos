@@ -105,6 +105,7 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `alquiler/ui/widgets.py` | `ESTILO` (desde el tema), `marca`, `TarjetaKPI` y `BarraEstados` (Inicio), `configurar_locale` (es-CO), `Tabla`, `Insignia`, `TarjetaResultado`, `botones_dialogo` (protección contra doble clic) y `ejecutar_accion`. |
 | `alquiler/ui/login.py` | Portada de ingreso: fondo cósmico animado, marca con degradado, beneficios y panel de vidrio con usuario y contraseña (tiembla ante un error) o formulario «Crear cuenta» de cliente. |
 | `alquiler/ui/animacion.py` | Animaciones: fundido y entrada escalonada, cifras que cuentan, barras que se llenan, temblor y brillo al pasar el cursor; duraciones de `tokens.css`, apagadas sin pantalla o con `ALQUILER_ANIMACIONES=0`. |
+| `alquiler/ui/cinematica.py` | Cinemática de arranque (≈5,6 s, se salta con clic/Enter/Esc): rejilla, red de datos, cubo que se traza, núcleo con destello, título con glitch y líneas de arranque con el estado real de la IA. `escena(t)` es determinista y el widget solo la pinta. |
 | `alquiler/ui/logo.py` | Logo "cubo neural" dibujado en vector: cubo neón con nodos y núcleo de IA que late; `Logo` (widget), `pixmap_logo` e `icono_app` (ícono de las ventanas). |
 | `alquiler/ui/ventana.py` | Ventana principal: barra lateral por rol, vistas perezosas, recarga al volver a una sección y espera de tareas al cerrar. |
 | `alquiler/ui/vistas/__init__.py` | Paquete de vistas. |
@@ -215,6 +216,7 @@ la suite. La API de Groq se reemplaza por `ClienteFalso` o por `httpx.MockTransp
 | `tests/ui/test_iconos.py` | Un icono por sección, se dibuja y cambia de color al seleccionarse; el menú lateral los muestra. |
 | `tests/ui/test_widgets_centro.py` | Fondo cósmico determinista, panel de vidrio, brillo neón, dona (segmentos, centro, vacía), tendencia (series, recarga sin acumular) y KPI con ícono. |
 | `tests/ui/test_animacion.py` | Duraciones de los tokens, apagado sin pantalla y por variable, contador con formato, fundido que restaura el brillo, cascada, barras, temblor, brillo al pasar, fondo que flota, dona que gira y tendencia animada. |
+| `tests/ui/test_cinematica.py` | Tramos de la línea de tiempo, cada efecto de la escena, glitch determinista, estado real de la IA, pintura por momentos, reproducción, saltar y arranque antes de la portada. |
 | `tests/ui/test_portada.py` | Portada de ingreso: estructura, campos con ícono, login correcto, temblor ante error, entrada animada y crear cuenta de cliente. |
 | `tests/ui/test_logo.py` | Geometría del cubo (8 vértices, 12 aristas, 3 ocultas), dibujo a varios tamaños, ícono de la aplicación, latido animado y uso en marca, portada y ventanas. |
 | `tests/ui/test_widgets_inicio.py` | `TarjetaKPI` (clic navega solo con destino) y `BarraEstados` (segmentos, caso vacío, pintado). |
