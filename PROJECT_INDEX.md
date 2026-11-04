@@ -131,10 +131,12 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `diseno/DESIGN.md` | Sistema de diseño: principios, color, tipografía, espaciado, radios, sombras, movimiento y accesibilidad. |
 | `diseno/tokens.css` | Variables CSS del sistema de diseño: única fuente de verdad visual (app de escritorio y styleguide). |
 | `diseno/styleguide.html` | Página de componentes (botones, estados, tarjetas, formularios, listas, cargando/vacío/error, avisos) hecha solo con `tokens.css`. |
-| `AlquilerEquipos.spec` | PyInstaller *onedir*: incluye las migraciones como datos, excluye los módulos de Qt no usados y copia `alquiler.env.ejemplo` junto al ejecutable. |
+| `AlquilerEquipos.spec` | PyInstaller *onedir*: incluye las migraciones como datos, excluye los módulos de Qt no usados copia `alquiler.env.ejemplo` junto al ejecutable, usa el ícono del logo y en macOS crea `AlquilerEquipos.app`. |
 | `alquiler.env.ejemplo` | Plantilla de configuración: se copia como `alquiler.env` (ignorado por git) y se pega la clave de Groq. |
 | `scripts/lanzador.py` | Punto de entrada del ejecutable. |
 | `scripts/empaquetar.py` | Construye el ejecutable y lo verifica con `--autoprueba` en un entorno limpio. |
+| `scripts/generar_iconos.py` | Genera `AlquilerEquipos.ico` (Windows), `.icns` (macOS) y `.png` desde el logo vectorial. |
+| `.github/workflows/descargas.yml` | GitHub Actions: pruebas en Linux, construcción y autoprueba en Windows y macOS, y publicación del `.zip` y el `.dmg` en *Releases* al subir una etiqueta `v*`. |
 | `scripts/empaquetar_windows.bat` | Lo mismo en Windows. |
 
 ---
@@ -183,6 +185,7 @@ la suite. La API de Groq se reemplaza por `ClienteFalso` o por `httpx.MockTransp
 |---|---|
 | `tests/test_config.py` | Valores por defecto, coma decimal, validación de cada variable y lectura de `alquiler.env` (BOM, CRLF, comillas, precedencia del entorno). |
 | `tests/test_probar_ia.py` | `--probar-ia`: sin clave, OK, error de IA, respuesta inválida y la bandera en `main`. |
+| `tests/test_iconos_app.py` | Íconos de la aplicación: `.ico` con 16–256 px, `.icns` y PNG de 1024 px con transparencia. |
 | `tests/test_db.py` | FK activas en SQLite y creación de la carpeta de la base. |
 | `tests/test_models.py` | Restricciones de las 9 entidades (unicidad, CHECK, FK, JSON). |
 | `tests/test_migraciones.py` | La migración Alembic es idéntica a los modelos e `init_db` es idempotente. |
