@@ -4,6 +4,8 @@ La secuencia es una línea de tiempo determinista: ``escena(t)`` dice qué se ve
 milisegundo ``t`` y el widget solo lo pinta. Así cada fotograma se puede probar sin reloj.
 """
 
+from dataclasses import dataclass
+
 DURACION = 5600  # ms
 TRAMOS: dict[str, tuple[int, int]] = {
     "rejilla": (0, 700),        # la rejilla en perspectiva aparece
@@ -21,3 +23,23 @@ def tramo(nombre: str, t: float) -> float:
     """Avance (0-1) del tramo ``nombre`` en el milisegundo ``t``."""
     inicio, fin = TRAMOS[nombre]
     return min(1.0, max(0.0, (t - inicio) / (fin - inicio)))
+
+
+NODOS = 48  # nodos de la red de datos
+
+
+@dataclass(frozen=True)
+class Escena:
+    """Lo que se ve en un instante de la cinemática."""
+
+    t: float
+    rejilla: float          # opacidad de la rejilla (0-1)
+    nodos: int              # nodos de la red ya encendidos
+
+
+def escena(t: float) -> Escena:
+    return Escena(
+        t=t,
+        rejilla=tramo("rejilla", t),
+        nodos=round(NODOS * tramo("red", t)),
+    )

@@ -14,3 +14,10 @@ def test_tramo_va_de_0_a_1_dentro_de_su_intervalo():
 
 def test_los_tramos_caben_en_la_duracion():
     assert all(0 <= a < b <= cine.DURACION for a, b in cine.TRAMOS.values())
+
+
+def test_rejilla_y_red_se_encienden():
+    assert cine.escena(0).rejilla == 0 and cine.escena(0).nodos == 0
+    medio = cine.escena(1000)
+    assert medio.rejilla == 1 and 0 < medio.nodos < cine.NODOS
+    assert cine.escena(1700).nodos == cine.NODOS
