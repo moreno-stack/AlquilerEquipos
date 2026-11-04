@@ -130,3 +130,10 @@ def test_se_puede_saltar(qtbot, monkeypatch, accion):
     else:
         qtbot.keyClick(c, teclas[accion])
     assert c.result() == QDialog.DialogCode.Accepted and not c.reproduciendo()
+
+
+def test_pista_para_saltar():
+    assert "saltar" in cine.PISTA.lower()
+    assert cine.escena(100).pista == 0
+    assert cine.escena(2000).pista == 1
+    assert cine.escena(cine.DURACION).pista == 0  # se va con el fundido

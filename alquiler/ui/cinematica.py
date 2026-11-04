@@ -37,6 +37,7 @@ NODOS = 48  # nodos de la red de datos
 ARISTAS = 12  # aristas del cubo del logo
 TITULO = "ALQUILER DE EQUIPOS"
 SUBTITULO = "SISTEMA INTELIGENTE · CENTRO DE CONTROL"
+PISTA = "Clic o Esc para saltar"
 
 
 def orden_aristas() -> list[tuple[int, int]]:
@@ -59,6 +60,7 @@ class Escena:
     lineas: int             # líneas de arranque visibles (0-4)
     progreso: float         # barra de carga (0-1)
     fundido: float          # velo final hacia la portada (0-1)
+    pista: float            # opacidad del aviso para saltar (0-1)
 
 
 def escena(t: float) -> Escena:
@@ -73,6 +75,7 @@ def escena(t: float) -> Escena:
         lineas=min(LINEAS, int(LINEAS * tramo("arranque", t) * 1.25)),
         progreso=tramo("arranque", t),
         fundido=tramo("fundido", t),
+        pista=min(1.0, max(0.0, (t - 400) / 600)) * (1 - tramo("fundido", t)),
         destello=1 - abs(2 * tramo("destello", t) - 1) if 0 < tramo("destello", t) < 1 else 0.0,
     )
 
@@ -173,6 +176,10 @@ class Cinematica(QDialog):
         self._pintar_cubo(p, e, ancho, alto)
         self._pintar_titulo(p, e, ancho, alto)
         self._pintar_arranque(p, e, ancho, alto)
+        if e.pista:
+            p.setPen(tema.qcolor("deshabilitado", int(255 * e.pista)))
+            p.drawText(QRectF(0, alto - 36, ancho - 24, 24),
+                       Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter, PISTA)
         if e.destello:
             centro = QPointF(ancho * CENTRO_CUBO[0], alto * CENTRO_CUBO[1])
             luz = QRadialGradient(centro, max(ancho, alto) * 0.8)
