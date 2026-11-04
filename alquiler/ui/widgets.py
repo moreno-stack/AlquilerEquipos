@@ -27,6 +27,7 @@ from alquiler.ui.centro import (  # noqa: F401  (se reexportan para las vistas)
     GraficoDona,
     GraficoTendencia,
     Panel,
+    TextoCargando,
     TextoDegradado,
     aplicar_brillo,
 )

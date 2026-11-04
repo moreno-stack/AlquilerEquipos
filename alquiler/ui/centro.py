@@ -243,6 +243,37 @@ class BarraCarga(QWidget):
         p.end()
 
 
+class TextoCargando(QLabel):
+    """Etiqueta "Analizando" con puntos que aparecen uno a uno mientras se espera."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setObjectName("textoCargando")
+        self._base, self._paso = "", 0
+        self._reloj = QTimer(self)
+        self._reloj.timeout.connect(self._avanzar)
+
+    def animado(self) -> bool:
+        return self._reloj.isActive()
+
+    def iniciar(self, texto: str) -> None:
+        self._base = texto.rstrip(".…")
+        if animacion.activas():
+            self._paso = 0
+            self._avanzar()
+            self._reloj.start(max(1, animacion.duracion("lenta")))
+        else:
+            self.setText(self._base + "…")
+
+    def detener(self, texto: str = "") -> None:
+        self._reloj.stop()
+        self.setText(texto)
+
+    def _avanzar(self):
+        self.setText(self._base + "." * self._paso + " " * (3 - self._paso))
+        self._paso = (self._paso + 1) % 4
+
+
 class Panel(QFrame):
     """Panel de vidrio esmerilado con título y subtítulo; el contenido va en ``capa``."""
 
