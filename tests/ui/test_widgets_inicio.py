@@ -65,3 +65,15 @@ def test_barra_pinta_sin_error(qtbot):
     assert not b.grab().isNull()
     b.cargar([])
     assert not b.grab().isNull()
+
+
+def test_barra_de_estados_se_llena_con_animaciones(qtbot, monkeypatch):
+    from alquiler.ui import animacion
+    b = BarraEstados()
+    qtbot.addWidget(b)
+    b.cargar([("Disponible", 3)])
+    assert b.progreso == 1  # sin animaciones: llena al instante
+    monkeypatch.setattr(animacion, "_forzado", True)
+    b.cargar([("Disponible", 3), ("Alquilado", 2)])
+    assert b.progreso < 1
+    qtbot.waitUntil(lambda: b.progreso == 1, timeout=3000)

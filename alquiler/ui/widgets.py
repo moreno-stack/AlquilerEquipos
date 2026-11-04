@@ -2,7 +2,7 @@
 
 from collections.abc import Callable
 
-from PySide6.QtCore import QLocale, QRectF, Qt, Signal
+from PySide6.QtCore import QEasingCurve, QLocale, QRectF, Qt, QVariantAnimation, Signal
 from PySide6.QtGui import QColor, QPainter, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -265,7 +265,7 @@ class _Barra(QWidget):
         pintor = QPainter(self)
         pintor.setRenderHint(QPainter.RenderHint.Antialiasing)
         pintor.setPen(Qt.PenStyle.NoPen)
-        x, ancho = 0.0, float(self.width())
+        x, ancho = 0.0, float(self.width()) * self._padre.progreso
         for _, n, color in segmentos:
             w = ancho * n / total
             pintor.setBrush(QColor(color))
@@ -280,6 +280,12 @@ class BarraEstados(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._conteos: list[tuple[str, int]] = []
+        self.progreso = 1.0  # fracción del ancho ya pintada (anima el llenado)
+        self._anim = QVariantAnimation(self)
+        self._anim.setStartValue(0.0)
+        self._anim.setEndValue(1.0)
+        self._anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._anim.valueChanged.connect(self._avanzar)
         capa = QVBoxLayout(self)
         capa.setContentsMargins(0, 0, 0, 0)
         self.barra = _Barra(self)
@@ -302,6 +308,17 @@ class BarraEstados(QWidget):
         self.leyenda.setText("&nbsp;&nbsp;&nbsp;".join(
             f"<span style='color:{tema.COLOR_ESTADO[estado][0]}'>■</span> {estado} <b>{n}</b>"
             for estado, n in self._conteos))
+        self._anim.stop()
+        if animacion.activas() and not vacia:  # la barra se llena de izquierda a derecha
+            self.progreso = 0.0
+            self._anim.setDuration(animacion.duracion("lenta") * 3)
+            self._anim.start()
+        else:
+            self.progreso = 1.0
+        self.barra.update()
+
+    def _avanzar(self, valor):
+        self.progreso = float(valor)
         self.barra.update()
 
     def texto_leyenda(self) -> str:
