@@ -4,9 +4,15 @@ La secuencia es una línea de tiempo determinista: ``escena(t)`` dice qué se ve
 milisegundo ``t`` y el widget solo lo pinta. Así cada fotograma se puede probar sin reloj.
 """
 
+import math
+import random
 from dataclasses import dataclass
 
-from alquiler.ui import logo
+from PySide6.QtCore import QPointF, QRectF, Qt
+from PySide6.QtGui import QBrush, QColor, QFont, QLinearGradient, QPainter, QPen, QRadialGradient
+from PySide6.QtWidgets import QDialog
+
+from alquiler.ui import logo, tema
 
 DURACION = 5600  # ms
 TRAMOS: dict[str, tuple[int, int]] = {
@@ -94,3 +100,172 @@ def glitch(t: float) -> int:
     cuadro = int(t // 60)                       # cambia cada 60 ms, siempre igual
     ruido = (cuadro * 2654435761) % 1000 / 1000  # hash entero: sin azar entre ejecuciones
     return 0 if ruido < 0.35 else round((ruido - 0.675) / 0.325 * GLITCH_MAX)
+
+
+# ---------------------------------------------------------------- el widget
+CENTRO_CUBO = (0.5, 0.34)   # posición relativa del cubo
+LADO_CUBO = 0.36            # fracción del lado menor de la ventana
+
+
+class Cinematica(QDialog):
+    """Ventana sin bordes que pinta ``escena(t)``; ``ir_a(t)`` salta a cualquier instante."""
+
+    def __init__(self, ia_configurada: bool, parent=None):
+        super().__init__(parent)
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        self.setWindowTitle("Alquiler de Equipos")
+        self.setCursor(Qt.CursorShape.BlankCursor)
+        self.resize(1100, 680)
+        self._lineas = lineas_arranque(ia_configurada)
+        azar = random.Random(11)
+        self._nodos = [(azar.random(), azar.random()) for _ in range(NODOS)]
+        self._escena = escena(0)
+
+    def ir_a(self, t: float) -> None:
+        self._escena = escena(t)
+        self.update()
+
+    def escena_actual(self) -> Escena:
+        return self._escena
+
+    # ------------------------------------------------------------ pintura
+    def paintEvent(self, _evento):
+        e, ancho, alto = self._escena, self.width(), self.height()
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        p.fillRect(self.rect(), tema.qcolor("lateral"))
+        self._pintar_rejilla(p, e, ancho, alto)
+        self._pintar_red(p, e, ancho, alto)
+        self._pintar_cubo(p, e, ancho, alto)
+        self._pintar_titulo(p, e, ancho, alto)
+        self._pintar_arranque(p, e, ancho, alto)
+        if e.destello:
+            centro = QPointF(ancho * CENTRO_CUBO[0], alto * CENTRO_CUBO[1])
+            luz = QRadialGradient(centro, max(ancho, alto) * 0.8)
+            luz.setColorAt(0, tema.qcolor("blanco", int(230 * e.destello)))
+            luz.setColorAt(0.4, tema.qcolor("acento", int(120 * e.destello)))
+            luz.setColorAt(1, tema.qcolor("acento", 0))
+            p.fillRect(self.rect(), QBrush(luz))
+        if e.fundido:
+            p.fillRect(self.rect(), tema.qcolor("fondo", int(255 * e.fundido)))
+        p.end()
+
+    def _pintar_rejilla(self, p, e, ancho, alto):
+        if not e.rejilla:
+            return
+        horizonte, fuga = alto * 0.55, QPointF(ancho / 2, alto * 0.55)
+        p.setPen(QPen(tema.qcolor("acento", int(38 * e.rejilla)), 1))
+        for k in range(-12, 13):  # líneas que convergen al punto de fuga
+            p.drawLine(fuga, QPointF(ancho / 2 + k * ancho / 8, alto))
+        for k in range(1, 11):    # horizontales cada vez más separadas
+            y = horizonte + (alto - horizonte) * (k / 10) ** 2
+            p.drawLine(QPointF(0, y), QPointF(ancho, y))
+        barrido = (e.t / 900 % 1) * alto  # línea de escaneo que baja
+        p.setPen(QPen(tema.qcolor("acento", int(50 * e.rejilla)), 2))
+        p.drawLine(QPointF(0, barrido), QPointF(ancho, barrido))
+
+    def _pintar_red(self, p, e, ancho, alto):
+        puntos = [QPointF(x * ancho, y * alto) for x, y in self._nodos[:e.nodos]]
+        limite = 0.18 * math.hypot(ancho, alto)
+        for i, a in enumerate(puntos):
+            for b in puntos[i + 1:]:
+                d = math.hypot(a.x() - b.x(), a.y() - b.y())
+                if d < limite:
+                    p.setPen(QPen(tema.qcolor("acento", int(45 * (1 - d / limite))), 1))
+                    p.drawLine(a, b)
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(tema.qcolor("acento", 150))
+        for punto in puntos:
+            p.drawEllipse(punto, 1.8, 1.8)
+
+    def _pintar_cubo(self, p, e, ancho, alto):
+        if not e.cubo:
+            return
+        lado = min(ancho, alto) * LADO_CUBO
+        origen = QPointF(ancho * CENTRO_CUBO[0] - lado / 2, alto * CENTRO_CUBO[1] - lado / 2)
+        vertices = [QPointF(origen.x() + x * lado, origen.y() + y * lado) for x, y in logo.vertices()]
+        degradado = QLinearGradient(origen, origen + QPointF(lado, lado))
+        degradado.setColorAt(0, tema.qcolor("acento"))
+        degradado.setColorAt(1, tema.qcolor("secundario"))
+        tocados = set()
+        for k, (i, j) in enumerate(orden_aristas()):
+            parte = min(1.0, e.cubo - k)
+            if parte <= 0:
+                break
+            a, b = vertices[i], vertices[j]
+            fin = a + (b - a) * parte
+            for grosor, pincel in ((lado * 0.06, QBrush(tema.qcolor("acento", 50))),
+                                   (lado * 0.022, QBrush(degradado))):  # halo y trazo
+                p.setPen(QPen(pincel, grosor, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+                p.drawLine(a, fin)
+            tocados.add(i)
+            if parte >= 1:
+                tocados.add(j)
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(tema.qcolor("acento_hover"))
+        for i in tocados:
+            p.drawEllipse(vertices[i], lado * 0.03, lado * 0.03)
+        if e.nucleo:
+            cx, cy = logo.nucleo()
+            centro = QPointF(origen.x() + cx * lado, origen.y() + cy * lado)
+            radio = lado * (0.08 + 0.5 * e.destello)
+            brillo = QRadialGradient(centro, radio * 2.5)
+            brillo.setColorAt(0, tema.qcolor("blanco", int(255 * e.nucleo)))
+            brillo.setColorAt(0.25, tema.qcolor("acento_hover", int(230 * e.nucleo)))
+            brillo.setColorAt(1, tema.qcolor("acento", 0))
+            p.setBrush(QBrush(brillo))
+            p.drawEllipse(centro, radio * 2.5, radio * 2.5)
+
+    def _pintar_titulo(self, p, e, ancho, alto):
+        if not e.titulo:
+            return
+        fuente = QFont(self.font())
+        fuente.setPixelSize(max(18, int(alto * 0.07)))
+        fuente.setBold(True)
+        fuente.setLetterSpacing(QFont.SpacingType.PercentageSpacing, 112)
+        p.setFont(fuente)
+        caja = QRectF(0, alto * 0.58, ancho, alto * 0.1)
+        alineacion = Qt.AlignmentFlag.AlignCenter
+        desvio = glitch(e.t)
+        if desvio:  # copias desplazadas cian y púrpura
+            p.setPen(tema.qcolor("acento", 170))
+            p.drawText(caja.translated(-desvio, 0), alineacion, e.titulo)
+            p.setPen(tema.qcolor("purpura_neon", 170))
+            p.drawText(caja.translated(desvio, 0), alineacion, e.titulo)
+        degradado = QLinearGradient(ancho * 0.25, 0, ancho * 0.75, 0)
+        degradado.setColorAt(0, tema.qcolor("acento"))
+        degradado.setColorAt(1, tema.qcolor("secundario"))
+        p.setPen(QPen(QBrush(degradado), 1))
+        p.drawText(caja, alineacion, e.titulo)
+        if e.subtitulo:
+            fuente.setPixelSize(max(10, int(alto * 0.022)))
+            fuente.setBold(False)
+            fuente.setLetterSpacing(QFont.SpacingType.PercentageSpacing, 140)
+            p.setFont(fuente)
+            p.setPen(tema.qcolor("texto_secundario"))
+            p.drawText(QRectF(0, alto * 0.68, ancho, alto * 0.05), alineacion, e.subtitulo)
+
+    def _pintar_arranque(self, p, e, ancho, alto):
+        if not e.lineas and not e.progreso:
+            return
+        fuente = QFont("Consolas")
+        fuente.setStyleHint(QFont.StyleHint.Monospace)
+        fuente.setPixelSize(max(10, int(alto * 0.02)))
+        p.setFont(fuente)
+        x, y, paso = ancho * 0.3, alto * 0.76, alto * 0.032
+        for k, (texto, estado) in enumerate(self._lineas[:e.lineas]):
+            p.setPen(tema.qcolor("texto_secundario"))
+            p.drawText(QPointF(x, y + k * paso), f"> {texto}")
+            p.setPen(QColor(tema.COLOR_ESTADO["En mantenimiento"][0]) if estado == "MODO LOCAL"
+                     else tema.qcolor("acento"))
+            p.drawText(QRectF(x, y + k * paso - paso * 0.8, ancho * 0.4, paso),
+                       Qt.AlignmentFlag.AlignRight, f"[ {estado} ]")
+        barra = QRectF(ancho * 0.3, alto * 0.92, ancho * 0.4, 4)
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(tema.qcolor("superficie_alta"))
+        p.drawRoundedRect(barra, 2, 2)
+        relleno = QLinearGradient(barra.topLeft(), barra.topRight())
+        relleno.setColorAt(0, tema.qcolor("acento"))
+        relleno.setColorAt(1, tema.qcolor("secundario"))
+        p.setBrush(QBrush(relleno))
+        p.drawRoundedRect(QRectF(barra.x(), barra.y(), barra.width() * e.progreso, 4), 2, 2)

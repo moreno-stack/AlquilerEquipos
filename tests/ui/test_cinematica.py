@@ -80,3 +80,23 @@ def test_fundido_final():
     assert cine.escena(4900).fundido == 0
     assert 0 < cine.escena(5300).fundido < 1
     assert cine.escena(cine.DURACION).fundido == 1
+
+
+# ---------------------------------------------------------------- el widget
+def _brillo_centro(widget) -> int:
+    imagen = widget.grab().toImage()
+    x, y = int(widget.width() * cine.CENTRO_CUBO[0]), int(widget.height() * cine.CENTRO_CUBO[1])
+    return imagen.pixelColor(x, y).lightness()
+
+
+def test_pinta_cada_momento_de_la_secuencia(qtbot):
+    c = cine.Cinematica(ia_configurada=False)
+    qtbot.addWidget(c)
+    c.resize(960, 600)
+    for t in (0, 800, 1900, 2900, 3400, 4300, cine.DURACION):
+        c.ir_a(t)
+        assert c.escena_actual().t == t and not c.grab().isNull()
+    c.ir_a(0)
+    oscuro = _brillo_centro(c)
+    c.ir_a(2900)  # núcleo encendido y destello en su pico
+    assert _brillo_centro(c) > oscuro + 60
