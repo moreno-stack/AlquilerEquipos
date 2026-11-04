@@ -113,3 +113,20 @@ def test_se_reproduce_sola_y_termina(qtbot, monkeypatch):
     assert c.reproduciendo()
     qtbot.waitUntil(lambda: c.result() == QDialog.DialogCode.Accepted, timeout=3000)
     assert not c.reproduciendo()
+
+
+@pytest.mark.parametrize("accion", ["esc", "enter", "espacio", "clic"])
+def test_se_puede_saltar(qtbot, monkeypatch, accion):
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QDialog
+    from alquiler.ui import animacion
+    monkeypatch.setattr(animacion, "_forzado", True)
+    c = cine.Cinematica(ia_configurada=False)
+    qtbot.addWidget(c)
+    c.show()
+    teclas = {"esc": Qt.Key.Key_Escape, "enter": Qt.Key.Key_Return, "espacio": Qt.Key.Key_Space}
+    if accion == "clic":
+        qtbot.mouseClick(c, Qt.MouseButton.LeftButton)
+    else:
+        qtbot.keyClick(c, teclas[accion])
+    assert c.result() == QDialog.DialogCode.Accepted and not c.reproduciendo()
