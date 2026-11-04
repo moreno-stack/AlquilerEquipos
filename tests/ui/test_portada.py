@@ -95,3 +95,7 @@ def test_crear_cuenta_con_error_lo_explica(portada):
     portada.boton_crear_cuenta.click()
     assert "no coinciden" in portada.error_registro.text()
     assert portada.contexto is None and portada.result() != QDialog.DialogCode.Accepted
+
+
+def test_la_portada_tiene_pulsos_de_datos(portada):
+    assert len(portada.fondo.pulsos_en(1000, 1100, 680)) == 6

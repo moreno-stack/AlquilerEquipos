@@ -100,7 +100,7 @@ class LoginDialog(QDialog):
 
         exterior = QVBoxLayout(self)
         exterior.setContentsMargins(0, 0, 0, 0)
-        self.fondo = widgets.FondoCosmico(fps=30)
+        self.fondo = widgets.FondoCosmico(fps=30, pulsos=6)
         exterior.addWidget(self.fondo)
         capa = QHBoxLayout(self.fondo)
         capa.setContentsMargins(72, 48, 72, 48)
