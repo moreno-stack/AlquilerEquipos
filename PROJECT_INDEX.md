@@ -136,7 +136,7 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `scripts/lanzador.py` | Punto de entrada del ejecutable. |
 | `scripts/empaquetar.py` | Construye el ejecutable y lo verifica con `--autoprueba` en un entorno limpio. |
 | `scripts/generar_iconos.py` | Genera `AlquilerEquipos.ico` (Windows), `.icns` (macOS) y `.png` desde el logo vectorial. |
-| `.github/workflows/descargas.yml` | GitHub Actions: pruebas en Linux, construcción y autoprueba en Windows y macOS, y publicación del `.zip` y el `.dmg` en *Releases* al subir una etiqueta `v*`. |
+| `.github/workflows/descargas.yml` | GitHub Actions: pruebas en Linux, construcción y autoprueba en Windows y macOS, y publicación automática del `.zip` y el `.dmg` en la Release `v<versión>` con cada push a `main`. |
 | `scripts/empaquetar_windows.bat` | Lo mismo en Windows. |
 
 ---

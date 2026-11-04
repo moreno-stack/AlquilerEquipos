@@ -301,14 +301,9 @@ El flujo [`.github/workflows/descargas.yml`](.github/workflows/descargas.yml) ha
 3. verifica cada ejecutable con `--autoprueba`;
 4. publica `AlquilerEquipos-Windows.zip` y `AlquilerEquipos-macOS.dmg` en *Releases*.
 
-Para publicar una versión basta con crear y subir una etiqueta:
+No hay que crear etiquetas: **cada `git push` a `main` construye y publica la Release** `v<versión>` (la versión sale de `alquiler/__init__.py`). Si esa Release ya existe, se reemplazan sus archivos. Para sacar una versión nueva basta con cambiar `__version__`, por ejemplo a `"0.2.0"`, y hacer push.
 
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-Al cabo de unos 15 minutos los archivos aparecen en la página *Releases* del repositorio. También se puede lanzar a mano en *Actions → Descargas → Run workflow*; en ese caso los archivos quedan como artefactos de la ejecución y no se crea una Release.
+Al cabo de unos 15 minutos los archivos aparecen en la página *Releases* del repositorio. También se puede lanzar a mano en *Actions → Descargas → Run workflow*. Los cambios que solo tocan documentación (`.md`) no reconstruyen.
 
 **Activar la IA en la versión descargada:** copie `alquiler.env.ejemplo` como `alquiler.env` y pegue la clave. En Windows el archivo va junto a `AlquilerEquipos.exe`; en macOS, en la carpeta `~/.alquiler_equipos`.
 
