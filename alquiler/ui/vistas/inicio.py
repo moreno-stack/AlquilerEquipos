@@ -86,6 +86,8 @@ class VistaInicio(QWidget):
         cabecera.addWidget(self.etiqueta_titulo)
         cabecera.addLayout(fila)
         self._capa.addLayout(cabecera)
+        self.barra_carga = widgets.BarraCarga()
+        self._capa.addWidget(self.barra_carga)
 
         self._contenido = QWidget()
         self._capa.addWidget(self._contenido)
@@ -98,6 +100,7 @@ class VistaInicio(QWidget):
             return
         self.ocupado = True
         self.etiqueta_fecha.setText("· Cargando…")
+        self.barra_carga.iniciar()
         trabajador.ejecutar_en_segundo_plano(
             lambda: inicio.resumen(self.ctx), self._mostrar, self._fallo, self)
 
@@ -106,11 +109,13 @@ class VistaInicio(QWidget):
 
     def _fallo(self, mensaje: str):
         self.ocupado = False
+        self.barra_carga.detener()
         self.etiqueta_fecha.setText("")
         widgets.mostrar_error(self, mensaje)
 
     def _mostrar(self, datos: dict):
         self.ocupado = False
+        self.barra_carga.detener()
         self.etiqueta_saludo.setText(datos["saludo"]["texto"])
         self.etiqueta_fecha.setText("· " + datos["saludo"]["fecha"])
         nuevo = QWidget()

@@ -147,3 +147,11 @@ def test_tablero_animado_termina_en_los_valores_reales(qtbot, ctx_factory, datos
     qtbot.waitUntil(lambda: [t.etiqueta_valor.text() for t in vista.tarjetas] == esperadas,
                     timeout=4000)
     assert vista.animaciones  # la vista guarda sus animaciones en curso
+
+
+def test_inicio_muestra_carga_mientras_lee_los_datos(qtbot, ctx_factory, datos_base):
+    vista = VistaInicio(ctx_factory("admin"))
+    qtbot.addWidget(vista)
+    assert vista.barra_carga.activa()
+    _esperar(qtbot, vista)
+    assert not vista.barra_carga.activa()
