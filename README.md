@@ -28,7 +28,7 @@ No necesita instalar Python. Entre a **[Releases](https://github.com/moreno-stac
 
 | Sistema | Archivo | Cómo abrirlo |
 |---|---|---|
-| Windows 10/11 | `AlquilerEquipos-Windows.zip` | Descomprima la carpeta y abra `AlquilerEquipos.exe` |
+| Windows 10/11 | `AlquilerEquipos-Windows-Instalador.exe` | Ábralo y pulse *Instalar*: queda en el menú Inicio y, si lo marca, en el escritorio. No pide permisos de administrador |
 | macOS (Apple Silicon, M1 en adelante) | `AlquilerEquipos-macOS.dmg` | Abra el `.dmg` y arrastre la app a *Aplicaciones* |
 
 La aplicación no está firmada con un certificado de pago, así que la primera vez el sistema avisa:
@@ -294,12 +294,13 @@ Debe terminar con `AUTOPRUEBA OK` y código 0.
 
 ### 8.1 Publicar las descargas en GitHub
 
-El flujo [`.github/workflows/descargas.yml`](.github/workflows/descargas.yml) hace cuatro cosas:
+El flujo [`.github/workflows/descargas.yml`](.github/workflows/descargas.yml) hace cinco cosas:
 
 1. corre las pruebas en Linux;
 2. construye la aplicación en Windows y en macOS con este mismo spec, usando el ícono del logo que genera `scripts/generar_iconos.py`;
 3. verifica cada ejecutable con `--autoprueba`;
-4. publica `AlquilerEquipos-Windows.zip` y `AlquilerEquipos-macOS.dmg` en *Releases*.
+4. arma el instalador de Windows con Inno Setup (`instalador/AlquilerEquipos.iss`) y el `.dmg` de macOS;
+5. publica `AlquilerEquipos-Windows-Instalador.exe` y `AlquilerEquipos-macOS.dmg` en *Releases*.
 
 No hay que crear etiquetas: **cada `git push` a `main` construye y publica la Release** `v<versión>` (la versión sale de `alquiler/__init__.py`). Si esa Release ya existe, se reemplazan sus archivos. Para sacar una versión nueva basta con cambiar `__version__`, por ejemplo a `"0.2.0"`, y hacer push.
 
