@@ -22,6 +22,7 @@ TRAMOS: dict[str, tuple[int, int]] = {
     "fundido": (2300, 2800),    # el logo se acerca y todo se funde hacia el tablero
 }
 PASOS = 4
+PISTA = "Clic o Esc para saltar"
 
 
 def tramo(nombre: str, t: float) -> float:
@@ -38,6 +39,7 @@ class Escena:
     pasos: int        # verificaciones visibles
     progreso: float   # barra de carga (0-1)
     fundido: float    # acercamiento y velo final (0-1)
+    pista: float      # opacidad del aviso para saltar (0-1)
 
 
 def escena(t: float, nombre: str) -> Escena:
@@ -49,6 +51,7 @@ def escena(t: float, nombre: str) -> Escena:
         pasos=min(PASOS, int(PASOS * tramo("pasos", t) * 1.2)),
         progreso=tramo("progreso", t),
         fundido=tramo("fundido", t),
+        pista=min(1.0, max(0.0, (t - 300) / 500)) * (1 - tramo("fundido", t)),
     )
 
 
@@ -130,6 +133,10 @@ class TransicionSesion(QDialog):
         self._pintar_logo(p, e, ancho, alto)
         self._pintar_saludo(p, e, ancho, alto)
         self._pintar_pasos(p, e, ancho, alto)
+        if e.pista:
+            p.setPen(tema.qcolor("deshabilitado", int(255 * e.pista)))
+            p.drawText(QRectF(0, alto - 36, ancho - 24, 24),
+                       Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter, PISTA)
         if e.fundido:
             p.fillRect(self.rect(), tema.qcolor("fondo", int(255 * e.fundido)))
         p.end()

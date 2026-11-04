@@ -74,3 +74,9 @@ def test_se_salta_con_clic(qtbot):
     v.reproducir()
     qtbot.mouseClick(v, Qt.MouseButton.LeftButton)
     assert v.result() == tr.QDialog.DialogCode.Accepted
+
+
+def test_aviso_para_saltar():
+    assert tr.escena(0, "Ana").pista == 0
+    assert tr.escena(1000, "Ana").pista == 1
+    assert tr.escena(tr.DURACION, "Ana").pista == 0  # se va con el fundido
