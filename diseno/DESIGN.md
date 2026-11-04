@@ -198,6 +198,9 @@ En un tema oscuro, la sombra apenas se ve: la profundidad la da el tono (§1.3).
 | Barra de carga neón (brillo indeterminado) y «Analizando…» con puntos | Inicio, Análisis IA, Consola IA y Reportes mientras trabajan en segundo plano | 4 × `--duracion-lenta` por pasada; puntos cada `--duracion-lenta` |
 | Tarjetas de IA en cascada y respuesta de la consola con fundido | Análisis IA y Consola IA al recibir resultados | `--duracion-lenta` (40 ms entre tarjetas) |
 | Barras de los gráficos que crecen | Reportes, al generar | 3 × `--duracion-lenta` |
+| Tablas con fundido | Todas las tablas al cargar, buscar o filtrar | `--duracion-base` |
+| Barra de estados de la flota que se llena | Equipos | 3 × `--duracion-lenta` |
+| Barras del estado del sistema que se llenan y punto «en vivo» que late | Barra lateral, al abrir la ventana | 3 × `--duracion-lenta`; latido de 5 × `--duracion-lenta` |
 | Presentación y panel en cascada (160 ms) | Portada de ingreso | `--duracion-lenta` |
 | Cinemática de arranque: rejilla, red, cubo trazado, destello, título con glitch y líneas de arranque | Antes de la portada, una vez por arranque (se salta con clic, Enter o Esc) | ≈5,6 s (excepción: es una presentación, no una transición) |
 | Transición de sesión: anillo de escaneo, saludo, verificaciones reales y acercamiento | Entre la portada y el tablero, cada vez que alguien inicia sesión (se salta con clic, Enter o Esc) | ≈2,8 s |
