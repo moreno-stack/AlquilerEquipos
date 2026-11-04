@@ -1,0 +1,103 @@
+# Construye la aplicación de escritorio para Windows y macOS y la publica como descarga
+# en "Releases" de GitHub.
+#
+# Cómo publicar una versión:   git tag v0.1.0   y luego   git push origin v0.1.0
+# (también se puede lanzar a mano desde la pestaña Actions → "Descargas" → Run workflow;
+#  así solo deja los archivos como artefactos, sin crear una Release).
+
+name: Descargas
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # necesario para crear la Release y subir los archivos
+
+jobs:
+  construir:
+    name: ${{ matrix.nombre }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - nombre: Windows
+            so: windows-latest
+            archivo: AlquilerEquipos-Windows.zip
+          - nombre: macOS
+            so: macos-latest     # Apple Silicon (M1 en adelante)
+            archivo: AlquilerEquipos-macOS.dmg
+    runs-on: ${{ matrix.so }}
+    env:
+      QT_QPA_PLATFORM: offscreen   # pruebas y autoprueba sin pantalla
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller pillow
+
+      - name: Pruebas
+        run: python -m pytest -q
+
+      - name: Íconos
+        run: python scripts/generar_iconos.py
+
+      - name: Construir y verificar (autoprueba del ejecutable)
+        run: python scripts/empaquetar.py
+
+      - name: Empaquetar para Windows (.zip)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path dist/AlquilerEquipos -DestinationPath ${{ matrix.archivo }}
+
+      - name: Empaquetar para macOS (.dmg)
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p dmg
+          cp -R dist/AlquilerEquipos.app dmg/
+          cp alquiler.env.ejemplo dmg/
+          ln -s /Applications dmg/Aplicaciones
+          hdiutil create -volname "Alquiler de Equipos" -srcfolder dmg -ov -format UDZO ${{ matrix.archivo }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.nombre }}
+          path: ${{ matrix.archivo }}
+
+  publicar:
+    name: Publicar la Release
+    needs: construir
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: descargas
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Alquiler de Equipos ${{ github.ref_name }}
+          files: descargas/*
+          body: |
+            ## Descargas
+
+            | Sistema | Archivo |
+            |---|---|
+            | Windows 10/11 | **AlquilerEquipos-Windows.zip**: descomprima y abra `AlquilerEquipos.exe` |
+            | macOS (Apple Silicon) | **AlquilerEquipos-macOS.dmg**: abra el .dmg y arrastre la app a Aplicaciones |
+
+            La primera vez el sistema puede avisar que la app no está firmada:
+            - **Windows:** "Más información" → "Ejecutar de todas formas".
+            - **macOS:** clic derecho sobre la app → "Abrir" → "Abrir".
+
+            Para activar la IA, copie `alquiler.env.ejemplo` como `alquiler.env`, pegue su clave
+            de Groq y guárdelo junto al `.exe` (Windows) o en la carpeta `~/.alquiler_equipos` (macOS).
