@@ -116,8 +116,8 @@ class VentanaPrincipal(QMainWindow):
             barra = QProgressBar()
             barra.setObjectName("barraNeon")
             barra.setRange(0, 100)
-            barra.setValue(valor)
             barra.setTextVisible(False)
+            animacion.llenar(barra, valor)  # se llena al abrir la ventana
             capa.addLayout(cabecera)
             capa.addWidget(barra)
             return barra, estado

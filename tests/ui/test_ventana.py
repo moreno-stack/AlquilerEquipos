@@ -161,3 +161,12 @@ def test_el_fondo_del_sistema_no_lleva_pulsos(qtbot, ctx_factory):
     v = VentanaPrincipal(ctx_factory("admin"), {})
     qtbot.addWidget(v)
     assert v.fondo.pulsos_en(1000, 1280, 800) == []
+
+
+def test_barras_del_estado_del_sistema_se_llenan(qtbot, ctx_factory, monkeypatch):
+    from alquiler.ui import animacion
+    monkeypatch.setattr(animacion, "_forzado", True)
+    v = VentanaPrincipal(ctx_factory("admin"), {})
+    qtbot.addWidget(v)
+    assert v.barra_base.value() < 100
+    qtbot.waitUntil(lambda: v.barra_base.value() == 100, timeout=3000)
