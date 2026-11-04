@@ -194,6 +194,7 @@ En un tema oscuro, la sombra apenas se ve: la profundidad la da el tono (§1.3).
 | Brillo neón que se intensifica | Tarjetas, botón de diagnóstico y botón INGRESAR al pasar el cursor | `--duracion-base` |
 | Temblor | Panel de ingreso con usuario o contraseña incorrectos | `--duracion-lenta` + `--duracion-rapida` |
 | Red de datos que flota y nodos que laten | Fondo cósmico (portada y sistema) | Continua, solo mientras se ve |
+| Pulsos de datos: destellos con estela que viajan por los enlaces y encienden el nodo de llegada | Fondo de la portada (6 pulsos; no dentro del sistema) | 1,6 s por enlace, continuo |
 | Presentación y panel en cascada (160 ms) | Portada de ingreso | `--duracion-lenta` |
 | Cinemática de arranque: rejilla, red, cubo trazado, destello, título con glitch y líneas de arranque | Antes de la portada, una vez por arranque (se salta con clic, Enter o Esc) | ≈5,6 s (excepción: es una presentación, no una transición) |
 | Transición de sesión: anillo de escaneo, saludo, verificaciones reales y acercamiento | Entre la portada y el tablero, cada vez que alguien inicia sesión (se salta con clic, Enter o Esc) | ≈2,8 s |
