@@ -49,6 +49,7 @@ class FondoCosmico(QWidget):
     def __init__(self, parent=None, fps: int = 24, pulsos: int = 0):
         super().__init__(parent)
         self._n_pulsos = pulsos
+        self._cache_enlaces: dict[tuple[int, int], list[tuple[int, int]]] = {}
         azar = random.Random(_SEMILLA)
         # posiciones relativas (0-1): el dibujo escala con la ventana sin cambiar de forma
         self._relativos = [(azar.random(), azar.random(), azar.choice((1.2, 1.6, 2.2)))
@@ -72,10 +73,14 @@ class FondoCosmico(QWidget):
 
     def enlaces(self, ancho: float, alto: float) -> list[tuple[int, int]]:
         """Pares de nodos unidos por una línea (según su posición de reposo y el tamaño)."""
-        limite = _DISTANCIA_ENLACE * math.hypot(ancho, alto)
-        base = [(x * ancho, y * alto) for x, y, _ in self._relativos]
-        return [(i, j) for i in range(len(base)) for j in range(i + 1, len(base))
-                if math.dist(base[i], base[j]) < limite]
+        clave = (round(ancho), round(alto))
+        if clave not in self._cache_enlaces:  # se recalcula solo si cambia el tamaño
+            limite = _DISTANCIA_ENLACE * math.hypot(ancho, alto)
+            base = [(x * ancho, y * alto) for x, y, _ in self._relativos]
+            self._cache_enlaces = {clave: [(i, j) for i in range(len(base))
+                                           for j in range(i + 1, len(base))
+                                           if math.dist(base[i], base[j]) < limite]}
+        return list(self._cache_enlaces[clave])
 
     def pulsos_en(self, t_ms: float, ancho: float, alto: float) -> list[tuple[int, int, float]]:
         """Pulsos de datos en el instante ``t_ms``: (nodo de salida, nodo de llegada, avance 0-1).
@@ -100,12 +105,19 @@ class FondoCosmico(QWidget):
 
     def encendido(self, nodo: int, t_ms: float, ancho: float, alto: float) -> float:
         """Brillo extra (0-1) de un nodo cuando un pulso está por llegar a él."""
-        return max([(avance - 0.8) / 0.2 for _, j, avance in self.pulsos_en(t_ms, ancho, alto)
-                    if j == nodo and avance > 0.8] + [0.0])
+        return self._llegadas(self.pulsos_en(t_ms, ancho, alto)).get(nodo, 0.0)
 
-    def _pintar_pulsos(self, p: QPainter, puntos: list[QPointF], ancho: float, alto: float) -> None:
+    @staticmethod
+    def _llegadas(pulsos: list[tuple[int, int, float]]) -> dict[int, float]:
+        llegadas: dict[int, float] = {}
+        for _, j, avance in pulsos:
+            if avance > 0.8:
+                llegadas[j] = max(llegadas.get(j, 0.0), (avance - 0.8) / 0.2)
+        return llegadas
+
+    def _pintar_pulsos(self, p: QPainter, puntos: list[QPointF], pulsos) -> None:
         """Destello con estela que avanza por el enlace (cian y violeta alternados)."""
-        for k, (i, j, avance) in enumerate(self.pulsos_en(self._t, ancho, alto)):
+        for k, (i, j, avance) in enumerate(pulsos):
             a, b = puntos[i], puntos[j]
             cabeza = a + (b - a) * avance
             cola = a + (b - a) * max(0.0, avance - 0.35)
@@ -158,14 +170,16 @@ class FondoCosmico(QWidget):
                 if d < limite:
                     p.setPen(QPen(tema.qcolor("acento", int(38 * (1 - d / limite))), 1))
                     p.drawLine(a, b)
-        self._pintar_pulsos(p, puntos, ancho, alto)
+        pulsos = self.pulsos_en(self._t, ancho, alto)
+        self._pintar_pulsos(p, puntos, pulsos)
+        llegadas = self._llegadas(pulsos)
         p.setPen(Qt.PenStyle.NoPen)
         for i, (punto, (_, _, r), (w, fase)) in enumerate(zip(puntos, self._relativos, self._ritmos)):
             latido = max(0.0, math.sin(self._t * w * 4 + fase)) if i % _CADA_PULSO == 0 else 0.0
             if latido:  # halo del nodo que late
                 p.setBrush(tema.qcolor("acento", int(40 * latido)))
                 p.drawEllipse(punto, r * 4 * latido + r, r * 4 * latido + r)
-            llegada = self.encendido(i, self._t, ancho, alto) if self._n_pulsos else 0.0
+            llegada = llegadas.get(i, 0.0)
             if llegada:  # destello del nodo al que llega un pulso
                 p.setBrush(tema.qcolor("acento_hover", int(110 * llegada)))
                 p.drawEllipse(punto, r * 6 * llegada + r, r * 6 * llegada + r)
