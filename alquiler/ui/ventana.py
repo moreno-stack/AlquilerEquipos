@@ -104,7 +104,8 @@ class VentanaPrincipal(QMainWindow):
         titulo.setObjectName("tituloModulo")
         capa.addWidget(titulo)
 
-        def fila_barra(nombre: str, valor: int, texto: str) -> tuple[QProgressBar, QLabel]:
+        def fila_barra(nombre: str, valor: int, texto: str,
+                       vivo: bool = False) -> tuple[QProgressBar, QLabel]:
             cabecera = QHBoxLayout()
             etiqueta = QLabel(nombre)
             etiqueta.setObjectName("datoSistema")
@@ -112,6 +113,9 @@ class VentanaPrincipal(QMainWindow):
             estado.setObjectName("valorSistema")
             cabecera.addWidget(etiqueta)
             cabecera.addStretch(1)
+            if vivo:  # punto que late: el servicio está funcionando ahora mismo
+                self.punto_vivo = widgets.PuntoVivo()
+                cabecera.addWidget(self.punto_vivo)
             cabecera.addWidget(estado)
             barra = QProgressBar()
             barra.setObjectName("barraNeon")
@@ -122,7 +126,7 @@ class VentanaPrincipal(QMainWindow):
             capa.addWidget(barra)
             return barra, estado
 
-        self.barra_base, _ = fila_barra("Base de datos", 100, "Operativa")
+        self.barra_base, _ = fila_barra("Base de datos", 100, "Operativa", vivo=True)
         self.barra_ia, self.etiqueta_estado_ia = fila_barra(
             "IA · Groq", 100 if ctx.cliente_llm else 0, "Conectada" if ctx.cliente_llm else "Sin clave")
         datos = QGridLayout()

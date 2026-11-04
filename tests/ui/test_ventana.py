@@ -170,3 +170,10 @@ def test_barras_del_estado_del_sistema_se_llenan(qtbot, ctx_factory, monkeypatch
     qtbot.addWidget(v)
     assert v.barra_base.value() < 100
     qtbot.waitUntil(lambda: v.barra_base.value() == 100, timeout=3000)
+
+
+def test_punto_en_vivo_junto_a_la_base_de_datos(qtbot, ctx_factory):
+    from alquiler.ui import widgets
+    v = VentanaPrincipal(ctx_factory("admin"), {})
+    qtbot.addWidget(v)
+    assert isinstance(v.punto_vivo, widgets.PuntoVivo)
