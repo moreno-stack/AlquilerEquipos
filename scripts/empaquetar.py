@@ -33,7 +33,7 @@ def verificar(carpeta: Path) -> int:
                    "ALQUILER_DB_PATH": str(Path(tmp) / "Nueva carpeta ñ" / "alquiler.db"),
                    "PATH": str(sin_python) if os.name != "nt"
                    else os.environ.get("SystemRoot", r"C:\Windows")}
-        if sys.platform.startswith("linux"):
+        if sys.platform != "win32":  # Linux y macOS (también en servidores de CI sin pantalla)
             entorno["QT_QPA_PLATFORM"] = "offscreen"
         if os.name == "nt":
             entorno["SystemRoot"] = os.environ.get("SystemRoot", r"C:\Windows")
