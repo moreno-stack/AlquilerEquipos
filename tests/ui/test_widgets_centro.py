@@ -69,3 +69,11 @@ def test_tarjeta_kpi_con_icono(qtbot):
                             "icono": "alerta"})
     qtbot.addWidget(t)
     assert t.etiqueta_icono is not None and not t.etiqueta_icono.pixmap().isNull()
+
+
+def test_enlaces_de_la_red(qtbot):
+    f = widgets.FondoCosmico()
+    qtbot.addWidget(f)
+    enlaces = f.enlaces(1000, 600)
+    assert enlaces and all(0 <= i < j < len(f.nodos()) for i, j in enlaces)
+    assert enlaces == f.enlaces(1000, 600)  # siempre la misma red

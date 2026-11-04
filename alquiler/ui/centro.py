@@ -68,6 +68,13 @@ class FondoCosmico(QWidget):
         return [(x + _DERIVA * math.sin(t_ms * w + fase), y + _DERIVA * math.cos(t_ms * w * 0.8 + fase))
                 for (x, y, _), (w, fase) in zip(self._relativos, self._ritmos)]
 
+    def enlaces(self, ancho: float, alto: float) -> list[tuple[int, int]]:
+        """Pares de nodos unidos por una línea (según su posición de reposo y el tamaño)."""
+        limite = _DISTANCIA_ENLACE * math.hypot(ancho, alto)
+        base = [(x * ancho, y * alto) for x, y, _ in self._relativos]
+        return [(i, j) for i in range(len(base)) for j in range(i + 1, len(base))
+                if math.dist(base[i], base[j]) < limite]
+
     def animado(self) -> bool:
         return self._reloj.isActive()
 
