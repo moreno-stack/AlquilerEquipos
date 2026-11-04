@@ -43,3 +43,16 @@ def escena(t: float, nombre: str) -> Escena:
         progreso=tramo("progreso", t),
         fundido=tramo("fundido", t),
     )
+
+
+_ROLES = {"admin": "ADMINISTRADOR", "empleado": "EMPLEADO", "cliente": "CLIENTE"}
+
+
+def pasos_sesion(rol: str, secciones: int, ia_configurada: bool) -> list[tuple[str, str]]:
+    """Verificaciones que se muestran; todas describen el estado real (nada se finge)."""
+    return [
+        ("Identidad verificada", _ROLES.get(rol, rol.upper())),
+        ("Permisos del rol", f"{secciones} {'SECCIÓN' if secciones == 1 else 'SECCIONES'}"),
+        ("Asistente Cubi", "GROQ" if ia_configurada else "MODO LOCAL"),
+        ("Tablero de control", "LISTO"),
+    ]

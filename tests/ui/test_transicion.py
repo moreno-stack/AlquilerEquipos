@@ -18,3 +18,14 @@ def test_escena_inicial_y_final():
     final = tr.escena(tr.DURACION, "Ana")
     assert final.saludo == "Hola, Ana"  # sin suponer el género de nadie
     assert final.pasos == tr.PASOS and final.progreso == 1 and final.fundido == 1
+
+
+def test_pasos_con_datos_reales_de_la_cuenta():
+    pasos = tr.pasos_sesion("admin", 11, ia_configurada=False)
+    assert pasos == [("Identidad verificada", "ADMINISTRADOR"),
+                     ("Permisos del rol", "11 SECCIONES"),
+                     ("Asistente Cubi", "MODO LOCAL"),
+                     ("Tablero de control", "LISTO")]
+    assert tr.pasos_sesion("cliente", 2, ia_configurada=True)[1:3] == [
+        ("Permisos del rol", "2 SECCIONES"), ("Asistente Cubi", "GROQ")]
+    assert tr.pasos_sesion("cliente", 1, True)[1][1] == "1 SECCIÓN"
