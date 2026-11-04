@@ -154,7 +154,7 @@ class Cinematica(QDialog):
         if not e.rejilla:
             return
         horizonte, fuga = alto * 0.55, QPointF(ancho / 2, alto * 0.55)
-        p.setPen(QPen(tema.qcolor("acento", int(38 * e.rejilla)), 1))
+        p.setPen(QPen(tema.qcolor("acento", int(28 * e.rejilla)), 1))
         for k in range(-12, 13):  # líneas que convergen al punto de fuga
             p.drawLine(fuga, QPointF(ancho / 2 + k * ancho / 8, alto))
         for k in range(1, 11):    # horizontales cada vez más separadas
@@ -254,12 +254,13 @@ class Cinematica(QDialog):
         p.setFont(fuente)
         x, y, paso = ancho * 0.3, alto * 0.76, alto * 0.032
         for k, (texto, estado) in enumerate(self._lineas[:e.lineas]):
+            fila = QRectF(x, y + k * paso, ancho * 0.4, paso)
             p.setPen(tema.qcolor("texto_secundario"))
-            p.drawText(QPointF(x, y + k * paso), f"> {texto}")
+            p.drawText(fila, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, f"> {texto}")
             p.setPen(QColor(tema.COLOR_ESTADO["En mantenimiento"][0]) if estado == "MODO LOCAL"
                      else tema.qcolor("acento"))
-            p.drawText(QRectF(x, y + k * paso - paso * 0.8, ancho * 0.4, paso),
-                       Qt.AlignmentFlag.AlignRight, f"[ {estado} ]")
+            p.drawText(fila, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                       f"[ {estado} ]")
         barra = QRectF(ancho * 0.3, alto * 0.92, ancho * 0.4, 4)
         p.setPen(Qt.PenStyle.NoPen)
         p.setBrush(tema.qcolor("superficie_alta"))
