@@ -27,6 +27,7 @@ _NODOS = 64
 _DISTANCIA_ENLACE = 0.16  # fracción de la diagonal
 _DERIVA = 0.012            # cuánto flota cada nodo (fracción de la ventana)
 _CADA_PULSO = 5           # uno de cada 5 nodos late
+_VIAJE_PULSO = 1600       # ms que tarda un pulso de datos en recorrer su enlace
 
 
 def aplicar_brillo(widget: QWidget, clave_color: str = "acento", alfa: int = 70, radio: int = 32) -> None:
@@ -45,8 +46,9 @@ class FondoCosmico(QWidget):
     fondo está visible (``fps`` cuadros por segundo).
     """
 
-    def __init__(self, parent=None, fps: int = 24):
+    def __init__(self, parent=None, fps: int = 24, pulsos: int = 0):
         super().__init__(parent)
+        self._n_pulsos = pulsos
         azar = random.Random(_SEMILLA)
         # posiciones relativas (0-1): el dibujo escala con la ventana sin cambiar de forma
         self._relativos = [(azar.random(), azar.random(), azar.choice((1.2, 1.6, 2.2)))
@@ -74,6 +76,24 @@ class FondoCosmico(QWidget):
         base = [(x * ancho, y * alto) for x, y, _ in self._relativos]
         return [(i, j) for i in range(len(base)) for j in range(i + 1, len(base))
                 if math.dist(base[i], base[j]) < limite]
+
+    def pulsos_en(self, t_ms: float, ancho: float, alto: float) -> list[tuple[int, int, float]]:
+        """Pulsos de datos en el instante ``t_ms``: (nodo de salida, nodo de llegada, avance 0-1).
+
+        Cada pulso viaja ``_VIAJE_PULSO`` ms por un enlace y luego salta a otro. El enlace sale
+        de un hash entero del número de viaje: la animación es la misma en cada ejecución.
+        """
+        enlaces = self.enlaces(ancho, alto) if self._n_pulsos else []
+        if not enlaces:
+            return []
+        resultado = []
+        for k in range(self._n_pulsos):
+            desfase = k * _VIAJE_PULSO / self._n_pulsos
+            viaje, resto = divmod(t_ms + desfase, _VIAJE_PULSO)
+            semilla = (int(viaje) * 2654435761 + k * 40503) % 2**32
+            i, j = enlaces[semilla % len(enlaces)]
+            resultado.append((i, j, resto / _VIAJE_PULSO) if semilla & 1 else (j, i, resto / _VIAJE_PULSO))
+        return resultado
 
     def animado(self) -> bool:
         return self._reloj.isActive()

@@ -77,3 +77,23 @@ def test_enlaces_de_la_red(qtbot):
     enlaces = f.enlaces(1000, 600)
     assert enlaces and all(0 <= i < j < len(f.nodos()) for i, j in enlaces)
     assert enlaces == f.enlaces(1000, 600)  # siempre la misma red
+
+
+def test_sin_pulsos_por_defecto(qtbot):
+    f = widgets.FondoCosmico()
+    qtbot.addWidget(f)
+    assert f.pulsos_en(1234, 1000, 600) == []
+
+
+def test_pulsos_recorren_enlaces_reales(qtbot):
+    f = widgets.FondoCosmico(pulsos=6)
+    qtbot.addWidget(f)
+    enlaces = set(f.enlaces(1000, 600))
+    for t in (0, 700, 5000, 123456):
+        pulsos = f.pulsos_en(t, 1000, 600)
+        assert len(pulsos) == 6
+        for origen, destino, avance in pulsos:
+            assert (min(origen, destino), max(origen, destino)) in enlaces
+            assert 0 <= avance < 1
+    assert f.pulsos_en(5000, 1000, 600) == widgets.FondoCosmico(pulsos=6).pulsos_en(5000, 1000, 600)
+    assert f.pulsos_en(5000, 1000, 600) != f.pulsos_en(5600, 1000, 600)  # se mueven
