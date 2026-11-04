@@ -274,6 +274,52 @@ class TextoCargando(QLabel):
         self._paso = (self._paso + 1) % 4
 
 
+class PuntoVivo(QWidget):
+    """Punto verde "en vivo" con un halo que se expande y se apaga sin parar."""
+
+    def __init__(self, parent=None, clave_color: str | None = None):
+        super().__init__(parent)
+        self.setFixedSize(16, 16)
+        self._color = tema.COLOR_ESTADO["Disponible"][0] if clave_color is None else tema.PALETA[clave_color]
+        self.latido = 0.0
+        self._anim = QVariantAnimation(self)
+        self._anim.setStartValue(0.0)
+        self._anim.setEndValue(1.0)
+        self._anim.setLoopCount(-1)
+        self._anim.valueChanged.connect(self._latir)
+
+    def animado(self) -> bool:
+        return self._anim.state() == QVariantAnimation.State.Running
+
+    def _latir(self, valor):
+        self.latido = float(valor)
+        self.update()
+
+    def showEvent(self, evento):
+        if animacion.activas() and not self.animado():
+            self._anim.setDuration(animacion.duracion("lenta") * 5)
+            self._anim.start()
+        super().showEvent(evento)
+
+    def hideEvent(self, evento):
+        self._anim.stop()
+        super().hideEvent(evento)
+
+    def paintEvent(self, _evento):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        centro = QPointF(self.width() / 2, self.height() / 2)
+        p.setPen(Qt.PenStyle.NoPen)
+        if self.latido:
+            halo = QColor(self._color)
+            halo.setAlpha(int(150 * (1 - self.latido)))
+            p.setBrush(halo)
+            p.drawEllipse(centro, 3 + 5 * self.latido, 3 + 5 * self.latido)
+        p.setBrush(QColor(self._color))
+        p.drawEllipse(centro, 3, 3)
+        p.end()
+
+
 class Panel(QFrame):
     """Panel de vidrio esmerilado con título y subtítulo; el contenido va en ``capa``."""
 

@@ -115,3 +115,18 @@ def test_nodo_de_llegada_se_enciende(qtbot):
     llegando = 0.95 * 1600  # avance 0,95 del primer viaje
     assert f.encendido(destino, llegando, 1000, 600) > 0.5
     assert f.encendido(destino, 100, 1000, 600) == 0  # el pulso aún va lejos
+
+
+def test_punto_en_vivo_late(qtbot, monkeypatch):
+    from alquiler.ui import animacion
+    quieto = widgets.PuntoVivo()
+    qtbot.addWidget(quieto)
+    quieto.show()
+    assert not quieto.animado() and quieto.latido == 0
+    monkeypatch.setattr(animacion, "_forzado", True)
+    vivo = widgets.PuntoVivo()
+    qtbot.addWidget(vivo)
+    vivo.show()
+    assert vivo.animado()
+    qtbot.waitUntil(lambda: vivo.latido > 0.3, timeout=3000)
+    assert not vivo.grab().isNull()
