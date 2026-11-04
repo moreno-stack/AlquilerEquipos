@@ -87,6 +87,8 @@ Todo es opcional. Cada valor se puede dar de dos formas:
 Un valor inválido (por ejemplo `GROQ_TIMEOUT=0`) detiene el arranque con un mensaje que nombra la
 variable.
 
+**Animaciones.** La variable de entorno `ALQUILER_ANIMACIONES=0` apaga todo el movimiento, incluida la cinemática de arranque. Sirve para equipos lentos o para quien prefiere una interfaz quieta. Solo se lee como variable de entorno, no desde `alquiler.env`.
+
 ### 3.1 Activar la IA con Groq (3 pasos)
 
 1. Cree una clave gratuita en <https://console.groq.com/keys> (empieza por `gsk_`).
