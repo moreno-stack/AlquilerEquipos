@@ -22,6 +22,7 @@ from alquiler.errors import ReglaNegocioError
 from alquiler.ui import animacion, iconos, tema
 from alquiler.ui.logo import Logo
 from alquiler.ui.centro import (  # noqa: F401  (se reexportan para las vistas)
+    BarraCarga,
     FondoCosmico,
     GraficoDona,
     GraficoTendencia,

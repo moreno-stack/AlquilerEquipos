@@ -192,6 +192,57 @@ def _color_pulso(k: int) -> str:
     return "acento" if k % 2 == 0 else "purpura_neon"
 
 
+class BarraCarga(QWidget):
+    """Barra neón fina e indeterminada: un brillo recorre de izquierda a derecha mientras algo
+    trabaja en segundo plano. Oculta cuando no hay nada en curso."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedHeight(3)
+        self.posicion = 0.0  # 0-1: dónde va el brillo
+        self._activa = False
+        self._anim = QVariantAnimation(self)
+        self._anim.setStartValue(0.0)
+        self._anim.setEndValue(1.0)
+        self._anim.setLoopCount(-1)
+        self._anim.setEasingCurve(QEasingCurve.Type.InOutSine)
+        self._anim.valueChanged.connect(self._mover)
+        self.hide()
+
+    def activa(self) -> bool:
+        return self._activa
+
+    def iniciar(self) -> None:
+        self._activa = True
+        self.show()
+        if animacion.activas():
+            self._anim.setDuration(animacion.duracion("lenta") * 4)
+            self._anim.start()
+
+    def detener(self) -> None:
+        self._activa = False
+        self._anim.stop()
+        self.hide()
+
+    def _mover(self, valor):
+        self.posicion = float(valor)
+        self.update()
+
+    def paintEvent(self, _evento):
+        p = QPainter(self)
+        p.fillRect(self.rect(), tema.qcolor("superficie_alta"))
+        ancho = self.width()
+        tramo = ancho * 0.35
+        x = -tramo + (ancho + tramo) * self.posicion
+        brillo = QLinearGradient(x, 0, x + tramo, 0)
+        brillo.setColorAt(0, tema.qcolor("acento", 0))
+        brillo.setColorAt(0.5, tema.qcolor("acento"))
+        brillo.setColorAt(0.8, tema.qcolor("secundario"))
+        brillo.setColorAt(1, tema.qcolor("secundario", 0))
+        p.fillRect(QRectF(x, 0, tramo, self.height()), QBrush(brillo))
+        p.end()
+
+
 class Panel(QFrame):
     """Panel de vidrio esmerilado con título y subtítulo; el contenido va en ``capa``."""
 
