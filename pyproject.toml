@@ -17,6 +17,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-qt>=4.4"]
+empaquetar = ["pyinstaller>=6.10", "pillow>=10"]
 
 [tool.setuptools.packages.find]
 include = ["alquiler*"]
