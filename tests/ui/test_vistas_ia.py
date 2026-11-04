@@ -216,3 +216,19 @@ def test_tarjetas_de_ia_entran_en_cascada(qtbot, ctx_factory, datos_base, fabric
     pestana.boton.click()
     qtbot.waitUntil(pestana.boton.isEnabled, timeout=5000)
     assert pestana.animaciones and len(pestana.animaciones) == len(pestana.tarjetas)
+
+
+def test_consola_muestra_carga_y_la_respuesta_aparece_con_fundido(qtbot, ctx_factory, datos_base,
+                                                                  monkeypatch):
+    from PySide6.QtWidgets import QGraphicsOpacityEffect
+    from alquiler.ui import animacion
+    falso = ClienteFalso(gen(), {"respuesta": "Hay 2 equipos."})
+    v = VistaConsolaIA(ctx_factory("admin", cliente_llm=falso))
+    qtbot.addWidget(v)
+    v.campo_pregunta.setText("¿Qué equipos hay?")
+    v.boton_consultar.click()
+    assert v.barra_carga.activa()
+    monkeypatch.setattr(animacion, "_forzado", True)
+    _esperar(qtbot, v)
+    assert not v.barra_carga.activa()
+    assert isinstance(v._panel.graphicsEffect(), QGraphicsOpacityEffect)

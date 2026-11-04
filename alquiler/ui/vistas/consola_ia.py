@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from alquiler.ui import trabajador, widgets
+from alquiler.ui import animacion, trabajador, widgets
 from alquiler.ui.logica import ia
 from alquiler.ui.logica.contexto import Contexto
 
@@ -42,6 +42,7 @@ class VistaConsolaIA(QWidget):
         super().__init__(parent)
         self.ctx = ctx
         self.ocupado = False
+        self.animacion_respuesta = None
         self._historial: list[dict] = []
         capa = QHBoxLayout(self)
 
@@ -82,6 +83,8 @@ class VistaConsolaIA(QWidget):
         fila.addWidget(self.campo_pregunta, 1)
         fila.addWidget(self.boton_consultar)
         derecha.addLayout(fila)
+        self.barra_carga = widgets.BarraCarga()
+        derecha.addWidget(self.barra_carga)
 
         self._panel = QFrame()
         self._panel.setObjectName("tarjeta")
@@ -144,10 +147,12 @@ class VistaConsolaIA(QWidget):
         for b in [self.boton_consultar, *self.botones_predefinidas.values()]:
             b.setEnabled(False)
         self.etiqueta_estado.set_valor(texto_estado, "info")
+        self.barra_carga.iniciar()
         trabajador.ejecutar_en_segundo_plano(trabajo, self._recibir, self._fallo, self)
 
     def _terminar(self):
         self.ocupado = False
+        self.barra_carga.detener()
         for b in [self.boton_consultar, *self.botones_predefinidas.values()]:
             b.setEnabled(True)
 
@@ -169,6 +174,7 @@ class VistaConsolaIA(QWidget):
         self.lista_historial.setCurrentRow(0)
         self.lista_historial.blockSignals(False)
         self.mostrar(respuesta)
+        self.animacion_respuesta = animacion.fundido_entrada(self._panel)
 
     def _fallo(self, mensaje: str):
         self._terminar()
