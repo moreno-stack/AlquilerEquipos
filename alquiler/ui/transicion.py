@@ -109,7 +109,7 @@ class TransicionSesion(QDialog):
         centro = QPointF(ancho / 2, alto * 0.32)
         caja = QRectF(centro.x() - lado / 2, centro.y() - lado / 2, lado, lado)
         logo.pintar_logo(p, caja, latido=0.6 + 0.4 * math.sin(e.t / 160) ** 2)
-        if 0 < e.anillo < 1 or e.anillo == 1:
+        if e.anillo > 0:
             radio = lado * 0.72
             arco = QRectF(centro.x() - radio, centro.y() - radio, 2 * radio, 2 * radio)
             for grosor, alfa in ((10, 50), (3, 220)):
