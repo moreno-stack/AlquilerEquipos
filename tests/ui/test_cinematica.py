@@ -137,3 +137,36 @@ def test_pista_para_saltar():
     assert cine.escena(100).pista == 0
     assert cine.escena(2000).pista == 1
     assert cine.escena(cine.DURACION).pista == 0  # se va con el fundido
+
+
+# ---------------------------------------------------------------- arranque de la aplicación
+def test_sin_animaciones_no_hay_cinematica(config):
+    from alquiler.ui import app
+    assert app.mostrar_cinematica(config) is False
+
+
+def test_con_animaciones_se_muestra_con_el_estado_de_la_ia(config, monkeypatch, qapp):
+    import dataclasses
+    from alquiler.ui import animacion, app
+    monkeypatch.setattr(animacion, "_forzado", True)
+    vistas = []
+    monkeypatch.setattr(cine.Cinematica, "exec", lambda self: vistas.append(self._lineas) or 1)
+    assert app.mostrar_cinematica(dataclasses.replace(config, groq_api_key="gsk_prueba")) is True
+    assert ("Asistente Cubi · Groq", "CLAVE CONFIGURADA") in vistas[0]
+
+
+def test_main_muestra_la_cinematica_antes_de_la_portada(monkeypatch, qapp):
+    from alquiler.ui import app
+    orden = []
+    monkeypatch.setattr(app, "mostrar_cinematica", lambda config: orden.append("cinematica"))
+
+    class PortadaFalsa:
+        def __init__(self, *args): orden.append("portada")
+        def exec(self): return 0  # el usuario cierra la portada
+
+    monkeypatch.setattr(app, "LoginDialog", PortadaFalsa)
+    monkeypatch.setattr(app, "ofrecer_demo", lambda *a, **k: None)
+    monkeypatch.setattr(app, "preparar_base", lambda config: None)
+    monkeypatch.setattr(app.tema, "aplicar", lambda aplicacion: None)
+    assert app.main([]) == 0
+    assert orden == ["cinematica", "portada"]

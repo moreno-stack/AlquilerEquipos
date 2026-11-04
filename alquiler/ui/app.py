@@ -155,6 +155,16 @@ def _probar_ia_con_dialogo(config: Config | None, error: str | None) -> int:
     return codigo
 
 
+def mostrar_cinematica(config: Config) -> bool:
+    """Secuencia de arranque antes de la portada; no aparece si las animaciones están apagadas."""
+    from alquiler.ui import animacion
+    from alquiler.ui.cinematica import Cinematica
+    if not animacion.activas():
+        return False
+    Cinematica(ia_configurada=bool(config.groq_api_key)).exec()
+    return True
+
+
 def main(argv: list[str] | None = None) -> int:
     argumentos = sys.argv[1:] if argv is None else argv
     if "--version" in argumentos:
@@ -197,6 +207,7 @@ def main(argv: list[str] | None = None) -> int:
 
     ofrecer_demo(config, fabrica, _preguntar_demo, cargar_con_aviso)
     cliente_llm = crear_cliente(config)
+    mostrar_cinematica(config)  # una vez por arranque, no al cerrar sesión
     while True:
         login = LoginDialog(fabrica, config, cliente_llm, date.today)
         if login.exec() != QDialog.DialogCode.Accepted:
