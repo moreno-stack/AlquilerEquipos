@@ -165,6 +165,18 @@ def mostrar_cinematica(config: Config) -> bool:
     return True
 
 
+def mostrar_transicion(ctx) -> bool:
+    """Transición de la portada al tablero con los datos de la sesión; sin animaciones, nada."""
+    from alquiler.ui import animacion
+    from alquiler.ui.logica.navegacion import secciones_para
+    from alquiler.ui.transicion import TransicionSesion
+    if not animacion.activas():
+        return False
+    TransicionSesion(ctx.usuario.nombre, ctx.usuario.rol, len(secciones_para(ctx)),
+                     ia_configurada=ctx.cliente_llm is not None).exec()
+    return True
+
+
 def main(argv: list[str] | None = None) -> int:
     argumentos = sys.argv[1:] if argv is None else argv
     if "--version" in argumentos:
@@ -212,6 +224,7 @@ def main(argv: list[str] | None = None) -> int:
         login = LoginDialog(fabrica, config, cliente_llm, date.today)
         if login.exec() != QDialog.DialogCode.Accepted:
             return 0
+        mostrar_transicion(login.contexto)
         ventana = VentanaPrincipal(login.contexto, fabricas_de_vistas())
         ventana.show()
         aplicacion.exec()

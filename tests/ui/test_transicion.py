@@ -80,3 +80,45 @@ def test_aviso_para_saltar():
     assert tr.escena(0, "Ana").pista == 0
     assert tr.escena(1000, "Ana").pista == 1
     assert tr.escena(tr.DURACION, "Ana").pista == 0  # se va con el fundido
+
+
+# ---------------------------------------------------------------- dentro de la aplicación
+def test_sin_animaciones_no_hay_transicion(ctx_factory):
+    from alquiler.ui import app
+    assert app.mostrar_transicion(ctx_factory("admin")) is False
+
+
+def test_transicion_con_los_datos_de_la_sesion(ctx_factory, monkeypatch, qapp):
+    from alquiler.ui import animacion, app
+    monkeypatch.setattr(animacion, "_forzado", True)
+    vistas = []
+    monkeypatch.setattr(tr.TransicionSesion, "exec", lambda self: vistas.append(self._pasos) or 1)
+    assert app.mostrar_transicion(ctx_factory("empleado")) is True
+    assert vistas[0][0] == ("Identidad verificada", "EMPLEADO")
+    assert vistas[0][2] == ("Asistente Cubi", "MODO LOCAL")
+
+
+def test_main_muestra_la_transicion_entre_portada_y_tablero(monkeypatch, qapp, ctx_factory):
+    from alquiler.ui import app
+    orden = []
+    ctx = ctx_factory("admin")
+
+    class PortadaFalsa:
+        def __init__(self, *args): self.contexto = ctx
+        def exec(self): orden.append("portada"); return tr.QDialog.DialogCode.Accepted
+
+    class VentanaFalsa:
+        cerro_sesion = False
+        def __init__(self, *args): orden.append("tablero")
+        def show(self): pass
+
+    monkeypatch.setattr(app, "mostrar_cinematica", lambda config: None)
+    monkeypatch.setattr(app, "mostrar_transicion", lambda c: orden.append("transicion"))
+    monkeypatch.setattr(app, "LoginDialog", PortadaFalsa)
+    monkeypatch.setattr(app, "VentanaPrincipal", VentanaFalsa)
+    monkeypatch.setattr(app, "ofrecer_demo", lambda *a, **k: None)
+    monkeypatch.setattr(app, "preparar_base", lambda config: None)
+    monkeypatch.setattr(app.tema, "aplicar", lambda aplicacion: None)
+    monkeypatch.setattr(app.QApplication, "exec", lambda self=None: 0)
+    assert app.main([]) == 0
+    assert orden == ["portada", "transicion", "tablero"]
