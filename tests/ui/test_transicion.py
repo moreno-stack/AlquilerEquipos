@@ -49,3 +49,11 @@ def test_cada_momento_se_pinta(qtbot, t):
     v.ir_a(t)
     assert v.escena_actual().t == t
     assert not v.grab().isNull()
+
+
+def test_reproduce_en_tiempo_real_y_cierra_sola(qtbot, monkeypatch):
+    monkeypatch.setattr(tr, "DURACION", 300)
+    v = _ventana(qtbot)
+    v.reproducir()
+    assert v.reproduciendo()
+    qtbot.waitUntil(lambda: v.result() == tr.QDialog.DialogCode.Accepted, timeout=3000)
