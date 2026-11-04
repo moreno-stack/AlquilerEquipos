@@ -22,6 +22,22 @@ mantenimiento de la IA; los clientes ven sus alquileres activos y su saldo.
 > Plan por fases: [`docs/superpowers/plans/2026-10-04-alquiler-equipos.md`](docs/superpowers/plans/2026-10-04-alquiler-equipos.md) ·
 > Mapa del código: [`PROJECT_INDEX.md`](PROJECT_INDEX.md)
 
+## Descargar la aplicación (Windows y macOS)
+
+No necesita instalar Python. Entre a **[Releases](https://github.com/moreno-stack/AlquilerEquipos/releases/latest)** y descargue el archivo de su sistema:
+
+| Sistema | Archivo | Cómo abrirlo |
+|---|---|---|
+| Windows 10/11 | `AlquilerEquipos-Windows.zip` | Descomprima la carpeta y abra `AlquilerEquipos.exe` |
+| macOS (Apple Silicon, M1 en adelante) | `AlquilerEquipos-macOS.dmg` | Abra el `.dmg` y arrastre la app a *Aplicaciones* |
+
+La aplicación no está firmada con un certificado de pago, así que la primera vez el sistema avisa:
+
+- **Windows (SmartScreen):** pulse *Más información* y luego *Ejecutar de todas formas*.
+- **macOS (Gatekeeper):** haga clic derecho sobre la app, elija *Abrir* y confirme con *Abrir*.
+
+Las descargas las construye GitHub Actions (ver la [sección 8](#8-empaquetado-ejecutable-sin-python)).
+
 ---
 
 ## 1. Requisitos
@@ -275,6 +291,26 @@ Debe terminar con `AUTOPRUEBA OK` y código 0.
   diálogo** (y el código de salida queda en `%ERRORLEVEL%` si se lanza con `start /wait`).
 - El spec incluye las migraciones de Alembic como datos (`alquiler/migrations/**`) y excluye los
   módulos de Qt que no se usan.
+
+### 8.1 Publicar las descargas en GitHub
+
+El flujo [`.github/workflows/descargas.yml`](.github/workflows/descargas.yml) hace cuatro cosas:
+
+1. corre las pruebas en Linux;
+2. construye la aplicación en Windows y en macOS con este mismo spec, usando el ícono del logo que genera `scripts/generar_iconos.py`;
+3. verifica cada ejecutable con `--autoprueba`;
+4. publica `AlquilerEquipos-Windows.zip` y `AlquilerEquipos-macOS.dmg` en *Releases*.
+
+Para publicar una versión basta con crear y subir una etiqueta:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Al cabo de unos 15 minutos los archivos aparecen en la página *Releases* del repositorio. También se puede lanzar a mano en *Actions → Descargas → Run workflow*; en ese caso los archivos quedan como artefactos de la ejecución y no se crea una Release.
+
+**Activar la IA en la versión descargada:** copie `alquiler.env.ejemplo` como `alquiler.env` y pegue la clave. En Windows el archivo va junto a `AlquilerEquipos.exe`; en macOS, en la carpeta `~/.alquiler_equipos`.
 
 ## 9. Estructura del proyecto
 
