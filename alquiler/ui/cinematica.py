@@ -63,3 +63,15 @@ def escena(t: float) -> Escena:
         subtitulo=SUBTITULO if tramo("titulo", t) >= 1 else "",
         destello=1 - abs(2 * tramo("destello", t) - 1) if 0 < tramo("destello", t) < 1 else 0.0,
     )
+
+
+GLITCH_MAX = 6  # px de separación entre las copias cian y púrpura del título
+
+
+def glitch(t: float) -> int:
+    """Desplazamiento del efecto glitch: a saltos mientras el título se escribe; 0 fuera."""
+    if not 0 < tramo("titulo", t) < 1:
+        return 0
+    cuadro = int(t // 60)                       # cambia cada 60 ms, siempre igual
+    ruido = (cuadro * 2654435761) % 1000 / 1000  # hash entero: sin azar entre ejecuciones
+    return 0 if ruido < 0.35 else round((ruido - 0.675) / 0.325 * GLITCH_MAX)

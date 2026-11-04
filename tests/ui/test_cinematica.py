@@ -53,3 +53,10 @@ def test_titulo_se_escribe_letra_por_letra():
     assert cine.escena(3900).titulo == cine.TITULO
     assert cine.escena(3900).subtitulo == cine.SUBTITULO
     assert cine.escena(3000).subtitulo == ""
+
+
+def test_glitch_solo_mientras_se_escribe_y_es_determinista():
+    durante = [cine.glitch(t) for t in range(2800, 3800, 40)]
+    assert any(d != 0 for d in durante) and all(abs(d) <= cine.GLITCH_MAX for d in durante)
+    assert durante == [cine.glitch(t) for t in range(2800, 3800, 40)]
+    assert cine.glitch(2000) == 0 and cine.glitch(4200) == 0
