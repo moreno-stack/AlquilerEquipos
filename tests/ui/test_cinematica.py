@@ -100,3 +100,16 @@ def test_pinta_cada_momento_de_la_secuencia(qtbot):
     oscuro = _brillo_centro(c)
     c.ir_a(2900)  # núcleo encendido y destello en su pico
     assert _brillo_centro(c) > oscuro + 60
+
+
+def test_se_reproduce_sola_y_termina(qtbot, monkeypatch):
+    from PySide6.QtWidgets import QDialog
+    from alquiler.ui import animacion
+    monkeypatch.setattr(animacion, "_forzado", True)
+    monkeypatch.setattr(cine, "DURACION", 300)  # versión corta para la prueba
+    c = cine.Cinematica(ia_configurada=True)
+    qtbot.addWidget(c)
+    c.show()
+    assert c.reproduciendo()
+    qtbot.waitUntil(lambda: c.result() == QDialog.DialogCode.Accepted, timeout=3000)
+    assert not c.reproduciendo()

@@ -8,7 +8,7 @@ import math
 import random
 from dataclasses import dataclass
 
-from PySide6.QtCore import QPointF, QRectF, Qt
+from PySide6.QtCore import QAbstractAnimation, QPointF, QRectF, Qt, QVariantAnimation
 from PySide6.QtGui import QBrush, QColor, QFont, QLinearGradient, QPainter, QPen, QRadialGradient
 from PySide6.QtWidgets import QDialog
 
@@ -120,8 +120,27 @@ class Cinematica(QDialog):
         azar = random.Random(11)
         self._nodos = [(azar.random(), azar.random()) for _ in range(NODOS)]
         self._escena = escena(0)
+        self._reloj = QVariantAnimation(self)
+        self._reloj.valueChanged.connect(self.ir_a)
+        self._reloj.finished.connect(self.accept)
+
+    def reproducir(self) -> None:
+        """Avanza la línea de tiempo en tiempo real y cierra sola al terminar."""
+        self._reloj.setStartValue(0.0)
+        self._reloj.setEndValue(float(DURACION))
+        self._reloj.setDuration(DURACION)
+        self._reloj.start()
+
+    def reproduciendo(self) -> bool:
+        return self._reloj.state() == QAbstractAnimation.State.Running
+
+    def showEvent(self, evento):
+        super().showEvent(evento)
+        if not self.reproduciendo() and self.result() == 0:
+            self.reproducir()
 
     def ir_a(self, t: float) -> None:
+        t = float(t)
         self._escena = escena(t)
         self.update()
 
