@@ -2,7 +2,7 @@
 """Especificación de PyInstaller: ejecutable *onedir* del Sistema de Alquiler de Equipos.
 
 Construir:  python scripts/empaquetar.py       (o: pyinstaller --noconfirm --clean AlquilerEquipos.spec)
-Resultado:  dist/AlquilerEquipos/AlquilerEquipos[.exe]
+Resultado:  dist/AlquilerEquipos/AlquilerEquipos[.exe]  (y en macOS además dist/AlquilerEquipos.app)
 
 PyInstaller no compila de forma cruzada: el .exe de Windows se genera ejecutando este mismo
 archivo en Windows (ver scripts/empaquetar_windows.bat).
@@ -15,6 +15,13 @@ from pathlib import Path
 from PyInstaller.utils.hooks import collect_submodules
 
 RAIZ = Path(SPECPATH)
+sys.path.insert(0, str(RAIZ))
+from alquiler import __version__  # noqa: E402
+
+# Íconos generados con scripts/generar_iconos.py (si no existen, se usa el ícono por defecto).
+_ICONO = RAIZ / "build" / "iconos" / ("AlquilerEquipos.icns" if sys.platform == "darwin"
+                                     else "AlquilerEquipos.ico")
+ICONO = str(_ICONO) if _ICONO.is_file() else None
 
 # Alembic carga env.py y versions/*.py como archivos desde disco: van como datos, con
 # la misma ruta relativa que usa alquiler/db.py (Path(__file__).parent / "migrations").
@@ -58,10 +65,23 @@ exe = EXE(
     [],
     exclude_binaries=True,
     name="AlquilerEquipos",
-    console=sys.platform != "win32",  # en Windows: aplicación de ventana, sin consola
+    console=sys.platform not in ("win32", "darwin"),  # Windows y macOS: ventana, sin consola
+    icon=ICONO,
     upx=False,
 )
 coll = COLLECT(exe, a.binaries, a.datas, name="AlquilerEquipos", upx=False)
+
+if sys.platform == "darwin":  # aplicación de macOS (.app) para arrastrar a Aplicaciones
+    app = BUNDLE(
+        coll,
+        name="AlquilerEquipos.app",
+        icon=ICONO,
+        bundle_identifier="com.morenostack.alquilerequipos",
+        version=__version__,
+        info_plist={"CFBundleDisplayName": "Alquiler de Equipos",
+                    "CFBundleShortVersionString": __version__,
+                    "NSHighResolutionCapable": True},
+    )
 
 # Plantilla de configuración JUNTO al ejecutable (no dentro de _internal): config.py busca
 # alquiler.env en la carpeta del programa, y el usuario copia ahí la plantilla con su clave.
