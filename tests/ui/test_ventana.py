@@ -154,3 +154,10 @@ def test_cambio_de_seccion_con_fundido(qtbot, ctx_factory, monkeypatch):
     anim = v.animacion_seccion
     qtbot.waitUntil(lambda: anim.state() == QAbstractAnimation.State.Stopped, timeout=3000)
     assert v.vista_actual().graphicsEffect() is None
+
+
+def test_el_fondo_del_sistema_no_lleva_pulsos(qtbot, ctx_factory):
+    """Los pulsos son solo de la portada: dentro del sistema el fondo no recarga el equipo."""
+    v = VentanaPrincipal(ctx_factory("admin"), {})
+    qtbot.addWidget(v)
+    assert v.fondo.pulsos_en(1000, 1280, 800) == []
