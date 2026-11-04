@@ -98,6 +98,11 @@ class FondoCosmico(QWidget):
     def animado(self) -> bool:
         return self._reloj.isActive()
 
+    def encendido(self, nodo: int, t_ms: float, ancho: float, alto: float) -> float:
+        """Brillo extra (0-1) de un nodo cuando un pulso está por llegar a él."""
+        return max([(avance - 0.8) / 0.2 for _, j, avance in self.pulsos_en(t_ms, ancho, alto)
+                    if j == nodo and avance > 0.8] + [0.0])
+
     def _pintar_pulsos(self, p: QPainter, puntos: list[QPointF], ancho: float, alto: float) -> None:
         """Destello con estela que avanza por el enlace (cian y violeta alternados)."""
         for k, (i, j, avance) in enumerate(self.pulsos_en(self._t, ancho, alto)):
@@ -160,7 +165,11 @@ class FondoCosmico(QWidget):
             if latido:  # halo del nodo que late
                 p.setBrush(tema.qcolor("acento", int(40 * latido)))
                 p.drawEllipse(punto, r * 4 * latido + r, r * 4 * latido + r)
-            p.setBrush(tema.qcolor("acento", 90 + int(120 * latido)))
+            llegada = self.encendido(i, self._t, ancho, alto) if self._n_pulsos else 0.0
+            if llegada:  # destello del nodo al que llega un pulso
+                p.setBrush(tema.qcolor("acento_hover", int(110 * llegada)))
+                p.drawEllipse(punto, r * 6 * llegada + r, r * 6 * llegada + r)
+            p.setBrush(tema.qcolor("acento", min(255, 90 + int(120 * max(latido, llegada)))))
             p.drawEllipse(punto, r, r)
         p.end()
 

@@ -106,3 +106,12 @@ def test_pulsos_se_pintan_y_cambian_el_dibujo(qtbot):
         f.resize(800, 500)
         f._t = 900
     assert con.grab().toImage() != sin.grab().toImage()
+
+
+def test_nodo_de_llegada_se_enciende(qtbot):
+    f = widgets.FondoCosmico(pulsos=1)
+    qtbot.addWidget(f)
+    _, destino, _ = f.pulsos_en(0, 1000, 600)[0]
+    llegando = 0.95 * 1600  # avance 0,95 del primer viaje
+    assert f.encendido(destino, llegando, 1000, 600) > 0.5
+    assert f.encendido(destino, 100, 1000, 600) == 0  # el pulso aún va lejos
