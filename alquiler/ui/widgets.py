@@ -171,6 +171,7 @@ class Tabla(QTableView):
         self.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
         self.setSortingEnabled(True)
         self.resizeColumnsToContents()
+        self.animacion_carga = animacion.fundido_entrada(self, ms=animacion.duracion("base"))
 
     def seleccionada(self) -> dict | None:
         filas = self.selectionModel().selectedRows()

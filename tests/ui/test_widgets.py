@@ -72,3 +72,16 @@ def test_configurar_locale_usa_separadores_colombianos(qtbot):
         assert entero.text() == "40.000" and decimal.text() == "2,50"
     finally:
         QLocale.setDefault(anterior)
+
+
+def test_tabla_aparece_con_fundido_al_cargar(qtbot, monkeypatch):
+    from PySide6.QtWidgets import QGraphicsOpacityEffect
+    from alquiler.ui import animacion
+    t = widgets.Tabla()
+    qtbot.addWidget(t)
+    t.cargar([("a", "A")], [{"a": "1"}])
+    assert t.graphicsEffect() is None  # sin animaciones: nada
+    monkeypatch.setattr(animacion, "_forzado", True)
+    t.cargar([("a", "A")], [{"a": "2"}])
+    assert isinstance(t.graphicsEffect(), QGraphicsOpacityEffect)
+    qtbot.waitUntil(lambda: t.graphicsEffect() is None, timeout=3000)
