@@ -86,13 +86,15 @@ class VistaReportes(QWidget):
         self.campo_desde = self._fecha(inicio)
         self.campo_hasta = self._fecha(hoy)
         self.boton_generar = widgets.boton("Generar", "primario", self.generar)
-        self.etiqueta_estado = QLabel()
+        self.etiqueta_estado = widgets.TextoCargando()
         self.etiqueta_estado.setObjectName("subtituloVista")
         for w in (QLabel("Desde"), self.campo_desde, QLabel("Hasta"), self.campo_hasta,
                   self.boton_generar, self.etiqueta_estado):
             filtros.addWidget(w)
         filtros.addStretch()
         capa.addLayout(filtros)
+        self.barra_carga = widgets.BarraCarga()
+        capa.addWidget(self.barra_carga)
 
         fila_kpis = QGridLayout()
         self.kpis: dict[str, QLabel] = {}
@@ -136,13 +138,15 @@ class VistaReportes(QWidget):
     def generar(self):
         desde, hasta = self.campo_desde.date().toPython(), self.campo_hasta.date().toPython()
         self.boton_generar.setEnabled(False)
-        self.etiqueta_estado.setText("Generando…")
+        self.etiqueta_estado.iniciar("Generando")
+        self.barra_carga.iniciar()
         trabajador.ejecutar_en_segundo_plano(
             lambda: reportes.generar(self.ctx, desde, hasta), self._mostrar, self._fallo, self)
 
     def _fallo(self, mensaje: str):
         self.boton_generar.setEnabled(True)
-        self.etiqueta_estado.setText("")
+        self.etiqueta_estado.detener("")
+        self.barra_carga.detener()
         widgets.mostrar_error(self, mensaje)
 
     def _mostrar(self, datos: dict):
@@ -153,7 +157,8 @@ class VistaReportes(QWidget):
         self.tabla_uso.cargar(COLUMNAS_USO, datos["uso_equipos"])
         self.tabla_vencidos.cargar(COLUMNAS_VENCIDOS, datos["vencidos"])
         self.boton_generar.setEnabled(True)
-        self.etiqueta_estado.setText("")
+        self.etiqueta_estado.detener("")
+        self.barra_carga.detener()
 
     def _dibujar_ingresos(self, meses: list[tuple[str, int]]):
         chart = self.grafico_ingresos.chart()

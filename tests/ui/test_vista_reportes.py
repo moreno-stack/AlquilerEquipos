@@ -63,3 +63,12 @@ def test_periodo_invertido_muestra_error(qtbot, monkeypatch, con_movimientos):
     v.boton_generar.click()
     qtbot.waitUntil(lambda: bool(errores), timeout=5000)
     assert "período" in errores[0] and v.boton_generar.isEnabled()
+
+
+def test_reportes_muestra_carga_mientras_genera(qtbot, con_movimientos):
+    v = VistaReportes(con_movimientos)
+    qtbot.addWidget(v)
+    assert v.barra_carga.activa() and v.etiqueta_estado.text().startswith("Generando")
+    qtbot.waitUntil(v.boton_generar.isEnabled, timeout=5000)
+    assert not v.barra_carga.activa()
+
