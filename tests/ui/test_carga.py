@@ -28,3 +28,23 @@ def test_barra_de_carga_recorre(qtbot, con_animaciones):
     inicial = b.posicion
     qtbot.waitUntil(lambda: b.posicion != inicial, timeout=2000)
     assert not b.grab().isNull()
+
+
+def test_texto_cargando_sin_animaciones_es_fijo(qtbot):
+    t = widgets.TextoCargando()
+    qtbot.addWidget(t)
+    t.iniciar("Analizando")
+    assert t.text() == "Analizando…"
+    t.detener("Listo")
+    assert t.text() == "Listo"
+
+
+def test_texto_cargando_con_puntos_animados(qtbot, con_animaciones):
+    t = widgets.TextoCargando()
+    qtbot.addWidget(t)
+    t.iniciar("Analizando")
+    vistos = set()
+    qtbot.waitUntil(lambda: vistos.add(t.text()) or len(vistos) >= 3, timeout=3000)
+    assert all(v.startswith("Analizando") for v in vistos)
+    t.detener("")
+    assert t.text() == "" and not t.animado()

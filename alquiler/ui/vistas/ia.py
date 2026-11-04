@@ -42,7 +42,9 @@ class PestanaAnalisis(QWidget):
         cabecera.addWidget(nota, 1)
         cabecera.addWidget(self.boton)
         capa.addLayout(cabecera)
-        self.etiqueta_estado = QLabel()
+        self.barra_carga = widgets.BarraCarga()
+        capa.addWidget(self.barra_carga)
+        self.etiqueta_estado = widgets.TextoCargando()
         self.etiqueta_estado.setStyleSheet("font-weight:600;")
         self.etiqueta_estado.setWordWrap(True)
         capa.addWidget(self.etiqueta_estado)
@@ -58,13 +60,15 @@ class PestanaAnalisis(QWidget):
     def analizar(self):
         self.analizado = True
         self.boton.setEnabled(False)
-        self.etiqueta_estado.setText("Analizando…")
+        self.barra_carga.iniciar()
+        self.etiqueta_estado.iniciar("Analizando")
         trabajador.ejecutar_en_segundo_plano(lambda: self._analizar(self.ctx), self._mostrar,
                                              self._fallo, self)
 
     def _fallo(self, mensaje: str):
         self.boton.setEnabled(True)
-        self.etiqueta_estado.setText("")
+        self.barra_carga.detener()
+        self.etiqueta_estado.detener("")
         widgets.mostrar_error(self, mensaje)
 
     def _mostrar(self, datos: dict):
@@ -80,7 +84,8 @@ class PestanaAnalisis(QWidget):
             tarjeta = widgets.TarjetaResultado({**d, "insignias": insignias})
             self._lista.insertWidget(self._lista.count() - 1, tarjeta)
             self.tarjetas.append(tarjeta)
-        self.etiqueta_estado.setText(datos["resumen"])
+        self.barra_carga.detener()
+        self.etiqueta_estado.detener(datos["resumen"])
         self.boton.setEnabled(True)
 
 

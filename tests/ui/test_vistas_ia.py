@@ -192,3 +192,13 @@ def test_cerrar_con_consulta_en_curso(qtbot, ctx_factory, datos_base):
     lento.liberar.set()
     assert trabajador.esperar_tareas(5000)
     qtbot.wait(100)  # el resultado llega a un widget destruido: se descarta sin error
+
+
+def test_analisis_muestra_carga_mientras_trabaja(qtbot, ctx_factory, datos_base):
+    v = VistaAnalisisIA(ctx_factory("empleado"))
+    qtbot.addWidget(v)
+    pestana = v.pestanas["mantenimiento"]
+    pestana.boton.click()
+    assert pestana.barra_carga.activa() and pestana.etiqueta_estado.text().startswith("Analizando")
+    qtbot.waitUntil(pestana.boton.isEnabled, timeout=5000)
+    assert not pestana.barra_carga.activa()
