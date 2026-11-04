@@ -72,3 +72,14 @@ def test_reportes_muestra_carga_mientras_genera(qtbot, con_movimientos):
     qtbot.waitUntil(v.boton_generar.isEnabled, timeout=5000)
     assert not v.barra_carga.activa()
 
+
+
+def test_graficos_crecen_con_animaciones(qtbot, con_movimientos, monkeypatch):
+    from PySide6.QtCharts import QChart
+    from alquiler.ui import animacion
+    monkeypatch.setattr(animacion, "_forzado", True)
+    v = VistaReportes(con_movimientos)
+    qtbot.addWidget(v)
+    for grafico in (v.grafico_ingresos, v.grafico_categorias):
+        assert grafico.chart().animationOptions() & QChart.AnimationOption.SeriesAnimations
+    qtbot.waitUntil(v.boton_generar.isEnabled, timeout=5000)

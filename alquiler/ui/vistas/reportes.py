@@ -30,7 +30,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from alquiler.ui import tema, trabajador, widgets
+from alquiler.ui import animacion, tema, trabajador, widgets
 from alquiler.ui.logica import reportes
 from alquiler.ui.logica.contexto import Contexto
 from alquiler.ui.logica.formato import pesos
@@ -55,7 +55,11 @@ def _grafico(titulo: str) -> QChartView:
     chart.setBackgroundPen(QPen(QColor(tema.PALETA["borde"])))
     chart.setTitleBrush(QColor(tema.PALETA["texto"]))
     chart.setMargins(QMargins(6, 6, 6, 6))
-    chart.setAnimationOptions(QChart.AnimationOption.NoAnimation)
+    if animacion.activas():  # las barras crecen desde el eje al generar el reporte
+        chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
+        chart.setAnimationDuration(animacion.duracion("lenta") * 3)
+    else:
+        chart.setAnimationOptions(QChart.AnimationOption.NoAnimation)
     chart.setLocalizeNumbers(True)  # coma decimal, como el resto de la aplicación
     chart.setLocale(QLocale(QLocale.Language.Spanish, QLocale.Country.Colombia))
     vista = QChartView(chart)
