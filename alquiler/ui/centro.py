@@ -98,6 +98,26 @@ class FondoCosmico(QWidget):
     def animado(self) -> bool:
         return self._reloj.isActive()
 
+    def _pintar_pulsos(self, p: QPainter, puntos: list[QPointF], ancho: float, alto: float) -> None:
+        """Destello con estela que avanza por el enlace (cian y violeta alternados)."""
+        for k, (i, j, avance) in enumerate(self.pulsos_en(self._t, ancho, alto)):
+            a, b = puntos[i], puntos[j]
+            cabeza = a + (b - a) * avance
+            cola = a + (b - a) * max(0.0, avance - 0.35)
+            clave = _color_pulso(k)
+            estela = QLinearGradient(cola, cabeza)
+            estela.setColorAt(0, tema.qcolor(clave, 0))
+            estela.setColorAt(1, tema.qcolor(clave, 200))
+            p.setPen(QPen(QBrush(estela), 2, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+            p.drawLine(cola, cabeza)
+            brillo = QRadialGradient(cabeza, 9)
+            brillo.setColorAt(0, tema.qcolor("blanco", 230))
+            brillo.setColorAt(0.35, tema.qcolor(clave, 180))
+            brillo.setColorAt(1, tema.qcolor(clave, 0))
+            p.setPen(Qt.PenStyle.NoPen)
+            p.setBrush(QBrush(brillo))
+            p.drawEllipse(cabeza, 9, 9)
+
     def _avanzar(self):
         self._t = self._cronometro.elapsed()
         self.update()
@@ -133,6 +153,7 @@ class FondoCosmico(QWidget):
                 if d < limite:
                     p.setPen(QPen(tema.qcolor("acento", int(38 * (1 - d / limite))), 1))
                     p.drawLine(a, b)
+        self._pintar_pulsos(p, puntos, ancho, alto)
         p.setPen(Qt.PenStyle.NoPen)
         for i, (punto, (_, _, r), (w, fase)) in enumerate(zip(puntos, self._relativos, self._ritmos)):
             latido = max(0.0, math.sin(self._t * w * 4 + fase)) if i % _CADA_PULSO == 0 else 0.0
@@ -142,6 +163,10 @@ class FondoCosmico(QWidget):
             p.setBrush(tema.qcolor("acento", 90 + int(120 * latido)))
             p.drawEllipse(punto, r, r)
         p.end()
+
+
+def _color_pulso(k: int) -> str:
+    return "acento" if k % 2 == 0 else "purpura_neon"
 
 
 class Panel(QFrame):

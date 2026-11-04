@@ -97,3 +97,12 @@ def test_pulsos_recorren_enlaces_reales(qtbot):
             assert 0 <= avance < 1
     assert f.pulsos_en(5000, 1000, 600) == widgets.FondoCosmico(pulsos=6).pulsos_en(5000, 1000, 600)
     assert f.pulsos_en(5000, 1000, 600) != f.pulsos_en(5600, 1000, 600)  # se mueven
+
+
+def test_pulsos_se_pintan_y_cambian_el_dibujo(qtbot):
+    con, sin = widgets.FondoCosmico(pulsos=6), widgets.FondoCosmico()
+    for f in (con, sin):
+        qtbot.addWidget(f)
+        f.resize(800, 500)
+        f._t = 900
+    assert con.grab().toImage() != sin.grab().toImage()
