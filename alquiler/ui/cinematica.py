@@ -44,6 +44,8 @@ class Escena:
     rejilla: float          # opacidad de la rejilla (0-1)
     nodos: int              # nodos de la red ya encendidos
     cubo: float             # aristas trazadas (0-12; la parte decimal es la que va a medias)
+    nucleo: float           # brillo del núcleo de IA (0-1)
+    destello: float         # destello de luz: sube y baja (0-1-0)
 
 
 def escena(t: float) -> Escena:
@@ -52,4 +54,6 @@ def escena(t: float) -> Escena:
         rejilla=tramo("rejilla", t),
         nodos=round(NODOS * tramo("red", t)),
         cubo=ARISTAS * tramo("cubo", t),
+        nucleo=tramo("nucleo", t),
+        destello=1 - abs(2 * tramo("destello", t) - 1) if 0 < tramo("destello", t) < 1 else 0.0,
     )

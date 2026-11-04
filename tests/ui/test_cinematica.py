@@ -37,3 +37,10 @@ def test_orden_de_trazado_empieza_por_el_frente():
     ocultas = {(i, j) for i, j, oculta in __import__(
         "alquiler.ui.logo", fromlist=["aristas"]).aristas() if oculta}
     assert set(orden[-3:]) == ocultas  # las ocultas se dibujan al final
+
+
+def test_nucleo_se_enciende_con_un_destello():
+    antes, pico, despues = cine.escena(2400), cine.escena(2900), cine.escena(3300)
+    assert antes.nucleo == 0 and antes.destello == 0
+    assert pico.nucleo == 1 and pico.destello == pytest.approx(1)
+    assert despues.nucleo == 1 and despues.destello == 0
