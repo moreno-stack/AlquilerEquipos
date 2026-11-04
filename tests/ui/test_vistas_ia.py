@@ -202,3 +202,17 @@ def test_analisis_muestra_carga_mientras_trabaja(qtbot, ctx_factory, datos_base)
     assert pestana.barra_carga.activa() and pestana.etiqueta_estado.text().startswith("Analizando")
     qtbot.waitUntil(pestana.boton.isEnabled, timeout=5000)
     assert not pestana.barra_carga.activa()
+
+
+def test_tarjetas_de_ia_entran_en_cascada(qtbot, ctx_factory, datos_base, fabrica, monkeypatch):
+    from alquiler.ui import animacion
+    monkeypatch.setattr(animacion, "_forzado", True)
+    with fabrica() as s:
+        s.scalar(select(Equipo).where(Equipo.codigo == "TAL-001")).usos_acumulados = 60
+        s.commit()
+    v = VistaAnalisisIA(ctx_factory("empleado"))
+    qtbot.addWidget(v)
+    pestana = v.pestanas["mantenimiento"]
+    pestana.boton.click()
+    qtbot.waitUntil(pestana.boton.isEnabled, timeout=5000)
+    assert pestana.animaciones and len(pestana.animaciones) == len(pestana.tarjetas)

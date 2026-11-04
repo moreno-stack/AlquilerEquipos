@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from alquiler.ui import trabajador, widgets
+from alquiler.ui import animacion, trabajador, widgets
 from alquiler.ui.logica import ia
 from alquiler.ui.logica.contexto import Contexto
 
@@ -32,6 +32,7 @@ class PestanaAnalisis(QWidget):
         super().__init__(parent)
         self.ctx, self._analizar = ctx, analizar
         self.tarjetas: list[widgets.TarjetaResultado] = []
+        self.animaciones: list = []
         self.analizado = False
         capa = QVBoxLayout(self)
         cabecera = QHBoxLayout()
@@ -86,6 +87,7 @@ class PestanaAnalisis(QWidget):
             self.tarjetas.append(tarjeta)
         self.barra_carga.detener()
         self.etiqueta_estado.detener(datos["resumen"])
+        self.animaciones = animacion.escalonar(self.tarjetas, paso=40)
         self.boton.setEnabled(True)
 
 
