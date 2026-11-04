@@ -87,7 +87,7 @@ Todo es opcional. Cada valor se puede dar de dos formas:
 Un valor inválido (por ejemplo `GROQ_TIMEOUT=0`) detiene el arranque con un mensaje que nombra la
 variable.
 
-**Animaciones.** La variable de entorno `ALQUILER_ANIMACIONES=0` apaga todo el movimiento, incluida la cinemática de arranque. Sirve para equipos lentos o para quien prefiere una interfaz quieta. Solo se lee como variable de entorno, no desde `alquiler.env`.
+**Animaciones.** La variable de entorno `ALQUILER_ANIMACIONES=0` apaga todo el movimiento, incluidas la cinemática de arranque y la transición de sesión. Sirve para equipos lentos o para quien prefiere una interfaz quieta. Solo se lee como variable de entorno, no desde `alquiler.env`.
 
 ### 3.1 Activar la IA con Groq (3 pasos)
 
@@ -151,6 +151,7 @@ python -m alquiler
    La carga tarda unos segundos.
 4. Se reproduce la **cinemática de arranque** (unos 5 segundos; se salta con clic, Enter o Esc). Muestra el estado real de la IA: *clave configurada* o *modo local*.
 5. Aparece la portada con el inicio de sesión.
+6. Al entrar (o al crear una cuenta) una **transición** de unos 3 segundos saluda a la persona y muestra su rol, cuántas secciones tiene y si el asistente usa Groq o el modo local. También se salta con clic, Enter o Esc.
 
 Los datos demo también se pueden cargar desde la terminal en una base vacía:
 `python -m alquiler.seed [--hoy AAAA-MM-DD] [--semilla 42] [--meses 18]`.
