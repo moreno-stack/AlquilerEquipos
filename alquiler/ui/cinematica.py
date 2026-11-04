@@ -52,6 +52,7 @@ class Escena:
     subtitulo: str          # aparece entero cuando el título termina
     lineas: int             # líneas de arranque visibles (0-4)
     progreso: float         # barra de carga (0-1)
+    fundido: float          # velo final hacia la portada (0-1)
 
 
 def escena(t: float) -> Escena:
@@ -65,6 +66,7 @@ def escena(t: float) -> Escena:
         subtitulo=SUBTITULO if tramo("titulo", t) >= 1 else "",
         lineas=min(LINEAS, int(LINEAS * tramo("arranque", t) * 1.25)),
         progreso=tramo("arranque", t),
+        fundido=tramo("fundido", t),
         destello=1 - abs(2 * tramo("destello", t) - 1) if 0 < tramo("destello", t) < 1 else 0.0,
     )
 

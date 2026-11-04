@@ -74,3 +74,9 @@ def test_lineas_y_barra_de_carga_avanzan():
     medio = cine.escena(4000)
     assert 0 < medio.lineas < 4 and 0 < medio.progreso < 1
     assert cine.escena(4900).lineas == 4 and cine.escena(4900).progreso == 1
+
+
+def test_fundido_final():
+    assert cine.escena(4900).fundido == 0
+    assert 0 < cine.escena(5300).fundido < 1
+    assert cine.escena(cine.DURACION).fundido == 1
