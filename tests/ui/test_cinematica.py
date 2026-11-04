@@ -21,3 +21,19 @@ def test_rejilla_y_red_se_encienden():
     medio = cine.escena(1000)
     assert medio.rejilla == 1 and 0 < medio.nodos < cine.NODOS
     assert cine.escena(1700).nodos == cine.NODOS
+
+
+def test_cubo_se_traza_arista_por_arista():
+    assert cine.escena(1100).cubo == 0
+    medio = cine.escena(1950).cubo
+    assert 4 < medio < 8 and medio != int(medio)  # una arista a medio trazar
+    assert cine.escena(2700).cubo == cine.ARISTAS
+
+
+def test_orden_de_trazado_empieza_por_el_frente():
+    orden = cine.orden_aristas()
+    assert sorted(orden) == sorted((i, j) for i, j, _ in __import__(
+        "alquiler.ui.logo", fromlist=["aristas"]).aristas())
+    ocultas = {(i, j) for i, j, oculta in __import__(
+        "alquiler.ui.logo", fromlist=["aristas"]).aristas() if oculta}
+    assert set(orden[-3:]) == ocultas  # las ocultas se dibujan al final

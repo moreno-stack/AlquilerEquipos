@@ -6,6 +6,8 @@ milisegundo ``t`` y el widget solo lo pinta. Así cada fotograma se puede probar
 
 from dataclasses import dataclass
 
+from alquiler.ui import logo
+
 DURACION = 5600  # ms
 TRAMOS: dict[str, tuple[int, int]] = {
     "rejilla": (0, 700),        # la rejilla en perspectiva aparece
@@ -26,6 +28,12 @@ def tramo(nombre: str, t: float) -> float:
 
 
 NODOS = 48  # nodos de la red de datos
+ARISTAS = 12  # aristas del cubo del logo
+
+
+def orden_aristas() -> list[tuple[int, int]]:
+    """Orden de trazado: primero las aristas del frente, al final las tres ocultas."""
+    return [(i, j) for i, j, oculta in sorted(logo.aristas(), key=lambda a: a[2])]
 
 
 @dataclass(frozen=True)
@@ -35,6 +43,7 @@ class Escena:
     t: float
     rejilla: float          # opacidad de la rejilla (0-1)
     nodos: int              # nodos de la red ya encendidos
+    cubo: float             # aristas trazadas (0-12; la parte decimal es la que va a medias)
 
 
 def escena(t: float) -> Escena:
@@ -42,4 +51,5 @@ def escena(t: float) -> Escena:
         t=t,
         rejilla=tramo("rejilla", t),
         nodos=round(NODOS * tramo("red", t)),
+        cubo=ARISTAS * tramo("cubo", t),
     )
