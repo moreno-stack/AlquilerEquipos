@@ -101,7 +101,7 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `alquiler/ui/trabajador.py` | `ejecutar_en_segundo_plano` con QThreadPool: el resultado vuelve al hilo GUI y se descarta si el widget ya se destruyó. |
 | `alquiler/ui/tema.py` | Traduce a Qt los tokens de `diseno/tokens.css` (paleta, estados, QSS, `aplicar(app)` con Fusion oscuro); no escribe ningún color a mano. |
 | `alquiler/ui/iconos.py` | Iconos vectoriales del menú (SVG en código, QtSvg) con color normal y de sección activa. |
-| `alquiler/ui/centro.py` | Piezas del centro de control: `FondoCosmico` (red de datos; con `pulsos` destellos que viajan por los enlaces), `Panel` de vidrio, `aplicar_brillo` (neón), `GraficoDona` y `GraficoTendencia`. |
+| `alquiler/ui/centro.py` | Piezas del centro de control: `FondoCosmico` (red de datos; con `pulsos` destellos que viajan por los enlaces), `Panel` de vidrio, `aplicar_brillo` (neón), `BarraCarga` (brillo neón indeterminado), `TextoCargando` (puntos animados), `GraficoDona` y `GraficoTendencia`. |
 | `alquiler/ui/widgets.py` | `ESTILO` (desde el tema), `marca`, `TarjetaKPI` y `BarraEstados` (Inicio), `configurar_locale` (es-CO), `Tabla`, `Insignia`, `TarjetaResultado`, `botones_dialogo` (protección contra doble clic) y `ejecutar_accion`. |
 | `alquiler/ui/login.py` | Portada de ingreso: fondo cósmico animado, marca con degradado, beneficios y panel de vidrio con usuario y contraseña (tiembla ante un error) o formulario «Crear cuenta» de cliente. |
 | `alquiler/ui/animacion.py` | Animaciones: fundido y entrada escalonada, cifras que cuentan, barras que se llenan, temblor y brillo al pasar el cursor; duraciones de `tokens.css`, apagadas sin pantalla o con `ALQUILER_ANIMACIONES=0`. |
@@ -217,6 +217,7 @@ la suite. La API de Groq se reemplaza por `ClienteFalso` o por `httpx.MockTransp
 | `tests/ui/test_iconos.py` | Un icono por sección, se dibuja y cambia de color al seleccionarse; el menú lateral los muestra. |
 | `tests/ui/test_widgets_centro.py` | Fondo cósmico determinista, panel de vidrio, brillo neón, dona (segmentos, centro, vacía), tendencia (series, recarga sin acumular) y KPI con ícono. |
 | `tests/ui/test_animacion.py` | Duraciones de los tokens, apagado sin pantalla y por variable, contador con formato, fundido que restaura el brillo, cascada, barras, temblor, brillo al pasar, fondo que flota, dona que gira y tendencia animada. |
+| `tests/ui/test_carga.py` | Barra de carga (oculta hasta iniciar, recorre con animaciones) y texto de espera con puntos animados o fijo. |
 | `tests/ui/test_cinematica.py` | Tramos de la línea de tiempo, cada efecto de la escena, glitch determinista, estado real de la IA, pintura por momentos, reproducción, saltar y arranque antes de la portada. |
 | `tests/ui/test_transicion.py` | Tramos y escenas de la transición, verificaciones con datos reales, pintura, reproducción, saltar y orden portada → transición → tablero. |
 | `tests/ui/test_portada.py` | Portada de ingreso: estructura, campos con ícono, login correcto, temblor ante error, entrada animada y crear cuenta de cliente. |
