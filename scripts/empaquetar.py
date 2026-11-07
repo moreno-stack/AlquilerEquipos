@@ -2,7 +2,8 @@
 
 Uso (desde la raíz del proyecto, con el entorno virtual activado):
     pip install pyinstaller
-    python scripts/empaquetar.py
+    python scripts/empaquetar.py                 # carpeta dist/AlquilerEquipos/
+    python scripts/empaquetar.py --un-archivo    # un solo archivo dist/AlquilerEquipos[.exe]
 """
 
 import os
@@ -16,17 +17,22 @@ RAIZ = Path(__file__).resolve().parent.parent
 NOMBRE = "AlquilerEquipos" + (".exe" if sys.platform == "win32" else "")
 
 
-def construir() -> Path:
+def construir(un_archivo: bool = False) -> Path:
+    entorno = {**os.environ, "ALQUILER_UN_ARCHIVO": "1" if un_archivo else "0"}
     subprocess.run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean",
-                    str(RAIZ / "AlquilerEquipos.spec")], cwd=RAIZ, check=True)
-    return RAIZ / "dist" / "AlquilerEquipos"
+                    str(RAIZ / "AlquilerEquipos.spec")], cwd=RAIZ, check=True, env=entorno)
+    return RAIZ / "dist" / (NOMBRE if un_archivo else "AlquilerEquipos")
 
 
 def verificar(carpeta: Path) -> int:
     """Copia el ejecutable fuera del repo y lo arranca sin Python en el PATH."""
     with tempfile.TemporaryDirectory() as tmp:
         copia = Path(tmp) / "app"
-        shutil.copytree(carpeta, copia)
+        if carpeta.is_file():  # un solo archivo: basta con copiar el ejecutable
+            copia.mkdir()
+            shutil.copy2(carpeta, copia / NOMBRE)
+        else:
+            shutil.copytree(carpeta, copia)
         sin_python = Path(tmp) / "path-vacio"  # PATH sin ningún intérprete de Python
         sin_python.mkdir()
         entorno = {"HOME": tmp, "USERPROFILE": tmp, "TEMP": tmp, "TMP": tmp,
@@ -37,7 +43,7 @@ def verificar(carpeta: Path) -> int:
             entorno["QT_QPA_PLATFORM"] = "offscreen"
         if os.name == "nt":
             entorno["SystemRoot"] = os.environ.get("SystemRoot", r"C:\Windows")
-        if not (copia / "alquiler.env.ejemplo").is_file():
+        if carpeta.is_dir() and not (copia / "alquiler.env.ejemplo").is_file():
             print("FALTA alquiler.env.ejemplo junto al ejecutable")
             return 1
         resultado = subprocess.run([str(copia / NOMBRE), "--autoprueba"], env=entorno,
@@ -55,8 +61,9 @@ def verificar(carpeta: Path) -> int:
 
 
 if __name__ == "__main__":
-    carpeta = construir()
-    tamano = sum(f.stat().st_size for f in carpeta.rglob("*")
+    carpeta = construir(un_archivo="--un-archivo" in sys.argv[1:])
+    archivos = [carpeta] if carpeta.is_file() else carpeta.rglob("*")
+    tamano = sum(f.stat().st_size for f in archivos
                  if f.is_file() and not f.is_symlink()) / 1_048_576
     print(f"Ejecutable en {carpeta} ({tamano:.0f} MB)")
     raise SystemExit(verificar(carpeta))
