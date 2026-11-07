@@ -42,13 +42,15 @@ jobs:
         include:
           - nombre: Windows
             so: windows-latest
-            archivo: AlquilerEquipos-Windows-Instalador.exe
+            archivo: AlquilerEquipos-Windows.exe     # un solo archivo: se descarga y se abre
+            opciones: --un-archivo
           - nombre: macOS
             so: macos-latest     # Apple Silicon (M1 en adelante)
-            archivo: AlquilerEquipos-macOS.dmg
+            archivo: AlquilerEquipos-macOS.zip       # la app comprimida: al abrirlo queda la app
+            opciones: ""
     runs-on: ${{ matrix.so }}
     env:
-      QT_QPA_PLATFORM: offscreen   # pruebas y autoprueba sin pantalla
+      QT_QPA_PLATFORM: offscreen   # autoprueba sin pantalla
     steps:
       - uses: actions/checkout@v4
 
@@ -66,27 +68,16 @@ jobs:
         run: python scripts/generar_iconos.py
 
       - name: Construir y verificar (autoprueba del ejecutable)
-        run: python scripts/empaquetar.py
+        run: python scripts/empaquetar.py ${{ matrix.opciones }}
 
-      - name: Instalador de Windows (.exe)
+      - name: Aplicación de Windows (.exe)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: |
-          if (-not (Get-Command iscc -ErrorAction SilentlyContinue)) { choco install innosetup -y --no-progress }
-          $iscc = (Get-Command iscc -ErrorAction SilentlyContinue).Source
-          if (-not $iscc) { $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" }
-          $version = python -c "import alquiler; print(alquiler.__version__)"
-          & $iscc "/DVersion=$version" instalador\AlquilerEquipos.iss
-          Copy-Item dist\${{ matrix.archivo }} ${{ matrix.archivo }}
+        run: Copy-Item dist\AlquilerEquipos.exe ${{ matrix.archivo }}
 
-      - name: Empaquetar para macOS (.dmg)
+      - name: Aplicación de macOS (.app comprimida)
         if: runner.os == 'macOS'
-        run: |
-          mkdir -p dmg
-          cp -R dist/AlquilerEquipos.app dmg/
-          cp alquiler.env.ejemplo dmg/
-          ln -s /Applications dmg/Aplicaciones
-          hdiutil create -volname "Alquiler de Equipos" -srcfolder dmg -ov -format UDZO ${{ matrix.archivo }}
+        run: ditto -c -k --sequesterRsrc --keepParent dist/AlquilerEquipos.app ${{ matrix.archivo }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -118,16 +109,15 @@ jobs:
           overwrite_files: true                          # cada push reemplaza los archivos
           files: descargas/*
           body: |
-            ## Descargas
+            ## Descargar
 
-            | Sistema | Archivo |
-            |---|---|
-            | Windows 10/11 | **AlquilerEquipos-Windows-Instalador.exe**: ábralo, pulse *Instalar* y quedará el acceso directo en el escritorio |
-            | macOS (Apple Silicon) | **AlquilerEquipos-macOS.dmg**: abra el .dmg y arrastre la app a Aplicaciones |
+            | Sistema | Archivo | Qué hacer |
+            |---|---|---|
+            | Windows 10/11 | **AlquilerEquipos-Windows.exe** | Descárguelo y ábralo con doble clic. No se instala nada |
+            | macOS (M1 en adelante) | **AlquilerEquipos-macOS.zip** | Descárguelo y ábralo: aparece la app *AlquilerEquipos*. Ábrala con doble clic |
 
-            La primera vez el sistema puede avisar que la app no está firmada:
+            La primera vez el sistema avisa que la app no está firmada:
             - **Windows:** "Más información" → "Ejecutar de todas formas".
             - **macOS:** clic derecho sobre la app → "Abrir" → "Abrir".
 
-            Para activar la IA, copie `alquiler.env.ejemplo` como `alquiler.env`, pegue su clave
-            de Groq y guárdelo en la carpeta `.alquiler_equipos` de su usuario (Windows y macOS).
+            Usuario de prueba: `admin` / `admin1234` (al primer arranque puede cargar datos de demostración).
