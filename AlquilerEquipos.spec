@@ -3,11 +3,13 @@
 
 Construir:  python scripts/empaquetar.py       (o: pyinstaller --noconfirm --clean AlquilerEquipos.spec)
 Resultado:  dist/AlquilerEquipos/AlquilerEquipos[.exe]  (y en macOS además dist/AlquilerEquipos.app)
+Con ALQUILER_UN_ARCHIVO=1 (Windows/Linux): un solo archivo dist/AlquilerEquipos[.exe], sin carpeta.
 
 PyInstaller no compila de forma cruzada: el .exe de Windows se genera ejecutando este mismo
 archivo en Windows (ver scripts/empaquetar_windows.bat).
 """
 
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -59,17 +61,24 @@ a = Analysis(
     noarchive=False,
 )
 pyz = PYZ(a.pure)
-exe = EXE(
-    pyz,
-    a.scripts,
-    [],
-    exclude_binaries=True,
-    name="AlquilerEquipos",
-    console=sys.platform not in ("win32", "darwin"),  # Windows y macOS: ventana, sin consola
-    icon=ICONO,
-    upx=False,
-)
-coll = COLLECT(exe, a.binaries, a.datas, name="AlquilerEquipos", upx=False)
+UN_ARCHIVO = os.environ.get("ALQUILER_UN_ARCHIVO") == "1" and sys.platform != "darwin"
+CONSOLA = sys.platform not in ("win32", "darwin")  # Windows y macOS: ventana, sin consola
+
+if UN_ARCHIVO:  # todo dentro del .exe: se descarga y se abre, sin carpeta ni instalación
+    exe = EXE(pyz, a.scripts, a.binaries, a.datas, [], name="AlquilerEquipos",
+              console=CONSOLA, icon=ICONO, upx=False)
+else:
+    exe = EXE(
+        pyz,
+        a.scripts,
+        [],
+        exclude_binaries=True,
+        name="AlquilerEquipos",
+        console=CONSOLA,
+        icon=ICONO,
+        upx=False,
+    )
+    coll = COLLECT(exe, a.binaries, a.datas, name="AlquilerEquipos", upx=False)
 
 if sys.platform == "darwin":  # aplicación de macOS (.app) para arrastrar a Aplicaciones
     app = BUNDLE(
@@ -85,4 +94,6 @@ if sys.platform == "darwin":  # aplicación de macOS (.app) para arrastrar a Apl
 
 # Plantilla de configuración JUNTO al ejecutable (no dentro de _internal): config.py busca
 # alquiler.env en la carpeta del programa, y el usuario copia ahí la plantilla con su clave.
-shutil.copy2(RAIZ / "alquiler.env.ejemplo", Path(DISTPATH) / "AlquilerEquipos" / "alquiler.env.ejemplo")
+if not UN_ARCHIVO:
+    shutil.copy2(RAIZ / "alquiler.env.ejemplo",
+                 Path(DISTPATH) / "AlquilerEquipos" / "alquiler.env.ejemplo")
