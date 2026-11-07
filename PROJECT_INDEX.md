@@ -134,10 +134,9 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `AlquilerEquipos.spec` | PyInstaller *onedir*: incluye las migraciones como datos, excluye los módulos de Qt no usados copia `alquiler.env.ejemplo` junto al ejecutable, usa el ícono del logo y en macOS crea `AlquilerEquipos.app`. |
 | `alquiler.env.ejemplo` | Plantilla de configuración: se copia como `alquiler.env` (ignorado por git) y se pega la clave de Groq. |
 | `scripts/lanzador.py` | Punto de entrada del ejecutable. |
-| `scripts/empaquetar.py` | Construye el ejecutable y lo verifica con `--autoprueba` en un entorno limpio. |
+| `scripts/empaquetar.py` | Construye el ejecutable (carpeta, o un solo archivo con `--un-archivo`) y lo verifica con `--autoprueba` en un entorno limpio. |
 | `scripts/generar_iconos.py` | Genera `AlquilerEquipos.ico` (Windows), `.icns` (macOS) y `.png` desde el logo vectorial. |
-| `instalador/AlquilerEquipos.iss` | Inno Setup: instalador de Windows de un solo archivo, sin permisos de administrador, con accesos directos y opción de abrir al terminar. |
-| `.github/workflows/descargas.yml` | GitHub Actions: pruebas en Linux, construcción y autoprueba en Windows y macOS, y publicación automática del instalador `.exe` y el `.dmg` en la Release `v<versión>` con cada push a `main`. |
+| `.github/workflows/descargas.yml` | GitHub Actions: pruebas en Linux, construcción y autoprueba en Windows y macOS, y publicación automática de `AlquilerEquipos-Windows.exe` (un solo archivo) y `AlquilerEquipos-macOS.zip` (la app) en la Release `v<versión>` con cada push a `main`. |
 | `scripts/empaquetar_windows.bat` | Lo mismo en Windows. |
 
 ---
