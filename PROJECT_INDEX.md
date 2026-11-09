@@ -95,7 +95,7 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `alquiler/ui/logica/personas.py` | Clientes (habilitados, historial con saldo), usuarios y perfil propio. |
 | `alquiler/ui/logica/operaciones.py` | Cotización, alquileres con situación, vista previa de la devolución, pagos y reservas clasificadas. |
 | `alquiler/ui/logica/reportes.py` | KPIs, ingresos por mes (mes parcial con `*`), uso de flota y vencidos. |
-| `alquiler/ui/logica/ia.py` | Tarjetas de resultados de IA y adaptación de la consola. |
+| `alquiler/ui/logica/ia.py` | Tarjetas de resultados de IA, adaptación de la consola y `conectar_ia` (probar, guardar y activar la clave). |
 | `alquiler/ui/logica/asistente.py` | Adapta las respuestas de Cubi para la vista: texto, emoción, fuentes legibles y sugerencias. |
 | `alquiler/ui/logica/inicio.py` | Pantalla de Inicio: `resumen(ctx)` por permisos (flota, operación, mantenimiento, ingresos del mes, alerta de IA sin persistir, "mis alquileres"), `tarjetas_kpi`, `fecha_larga` y `saludo_para`. |
 | `alquiler/ui/trabajador.py` | `ejecutar_en_segundo_plano` con QThreadPool: el resultado vuelve al hilo GUI y se descarta si el widget ya se destruyó. |
@@ -104,6 +104,7 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `alquiler/ui/centro.py` | Piezas del centro de control: `FondoCosmico` (red de datos; con `pulsos` destellos que viajan por los enlaces), `Panel` de vidrio, `aplicar_brillo` (neón), `BarraCarga` (brillo neón indeterminado), `TextoCargando` (puntos animados), `PuntoVivo` (punto «en vivo» que late), `GraficoDona` y `GraficoTendencia`. |
 | `alquiler/ui/widgets.py` | `ESTILO` (desde el tema), `marca`, `TarjetaKPI` y `BarraEstados` (Inicio), `configurar_locale` (es-CO), `Tabla`, `Insignia`, `TarjetaResultado`, `botones_dialogo` (protección contra doble clic) y `ejecutar_accion`. |
 | `alquiler/ui/login.py` | Portada de ingreso: fondo cósmico animado, marca con degradado, beneficios y panel de vidrio con usuario y contraseña (tiembla ante un error) o formulario «Crear cuenta» de cliente. |
+| `alquiler/ui/dialogo_ia.py` | Diálogo «Conectar la IA»: el administrador pega la clave de Groq, se prueba en segundo plano y se guarda. |
 | `alquiler/ui/animacion.py` | Animaciones: fundido y entrada escalonada, cifras que cuentan, barras que se llenan, temblor y brillo al pasar el cursor; duraciones de `tokens.css`, apagadas sin pantalla o con `ALQUILER_ANIMACIONES=0`. |
 | `alquiler/ui/cinematica.py` | Cinemática de arranque (≈5,6 s, se salta con clic/Enter/Esc): rejilla, red de datos, cubo que se traza, núcleo con destello, título con glitch y líneas de arranque con el estado real de la IA. `escena(t)` es determinista y el widget solo la pinta. |
 | `alquiler/ui/transicion.py` | Transición al iniciar sesión (≈2,8 s, se salta): anillo de escaneo sobre el logo, saludo «Hola, <nombre>», verificaciones reales (rol, secciones, estado de la IA) y acercamiento hacia el tablero. |
@@ -136,7 +137,7 @@ citada no existe o si un módulo o archivo de pruebas nuevo no aparece aquí.
 | `scripts/lanzador.py` | Punto de entrada del ejecutable. |
 | `scripts/empaquetar.py` | Construye el ejecutable (carpeta, o un solo archivo con `--un-archivo`) y lo verifica con `--autoprueba` en un entorno limpio. |
 | `scripts/generar_iconos.py` | Genera `AlquilerEquipos.ico` (Windows), `.icns` (macOS) y `.png` desde el logo vectorial. |
-| `.github/workflows/descargas.yml` | GitHub Actions: pruebas en Linux, construcción y autoprueba en Windows y macOS, y publicación automática de `AlquilerEquipos-Windows.exe` (un solo archivo) y `AlquilerEquipos-macOS.zip` (la app) en la Release `v<versión>` con cada push a `main`. |
+| `.github/workflows/descargas.yml` | GitHub Actions: pruebas en Linux, construcción y autoprueba en Windows y macOS, y publicación automática de `AlquilerEquipos-Windows.exe` (un solo archivo) y `AlquilerEquipos-macOS.dmg` (solo la app), borrando antes las Releases viejas en la Release `v<versión>` con cada push a `main`. |
 | `scripts/empaquetar_windows.bat` | Lo mismo en Windows. |
 
 ---
@@ -209,6 +210,7 @@ la suite. La API de Groq se reemplaza por `ClienteFalso` o por `httpx.MockTransp
 | `tests/ai/test_consultas.py` | Flujo en dos partes, aclaración, sin datos, corrección de SQL destructivo, errores y predefinidas. |
 | `tests/ai/test_asistente.py` | Herramientas por rol, privacidad del cliente, uso de herramientas, permisos negados, límite de pasos, historial recortado, errores y preguntas rápidas. |
 | `tests/ui/logica/test_contexto.py` | Rollback, sesión inválida, secciones por rol, formato y registro con entrada directa. |
+| `tests/ui/logica/test_conectar_ia.py` | Conectar la IA: clave válida se guarda y activa, clave que falla no se guarda, vacía y solo administrador. |
 | `tests/ui/logica/test_asistente_logica.py` | Turno de conversación como dict para la vista, sugerencias y respuesta rápida, y modo sin clave. |
 | `tests/ui/logica/test_catalogo.py` | Lógica de equipos y mantenimiento. |
 | `tests/ui/logica/test_personas.py` | Lógica de clientes, usuarios y perfil. |
@@ -224,6 +226,7 @@ la suite. La API de Groq se reemplaza por `ClienteFalso` o por `httpx.MockTransp
 | `tests/ui/test_cinematica.py` | Tramos de la línea de tiempo, cada efecto de la escena, glitch determinista, estado real de la IA, pintura por momentos, reproducción, saltar y arranque antes de la portada. |
 | `tests/ui/test_transicion.py` | Tramos y escenas de la transición, verificaciones con datos reales, pintura, reproducción, saltar y orden portada → transición → tablero. |
 | `tests/ui/test_portada.py` | Portada de ingreso: estructura, campos con ícono, login correcto, temblor ante error, entrada animada y crear cuenta de cliente. |
+| `tests/ui/test_dialogo_ia.py` | Diálogo de la clave (oculta, conecta, explica errores) y botón «Conectar IA» solo para el administrador sin clave. |
 | `tests/ui/test_logo.py` | Geometría del cubo (8 vértices, 12 aristas, 3 ocultas), dibujo a varios tamaños, ícono de la aplicación, latido animado y uso en marca, portada y ventanas. |
 | `tests/ui/test_widgets_inicio.py` | `TarjetaKPI` (clic navega solo con destino) y `BarraEstados` (segmentos, caso vacío, pintado). |
 | `tests/ui/test_widgets.py` | Tabla, insignias, tarjeta de IA y configuración regional es-CO. |

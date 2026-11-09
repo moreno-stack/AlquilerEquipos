@@ -29,9 +29,11 @@ No necesita instalar Python ni descomprimir carpetas. Descargue el archivo de su
 | Sistema | Descarga directa | Qué hacer |
 |---|---|---|
 | Windows 10/11 | [**AlquilerEquipos-Windows.exe**](https://github.com/moreno-stack/AlquilerEquipos/releases/latest/download/AlquilerEquipos-Windows.exe) | Doble clic y se abre la aplicación. No se instala nada |
-| macOS (Apple Silicon, M1 en adelante) | [**AlquilerEquipos-macOS.zip**](https://github.com/moreno-stack/AlquilerEquipos/releases/latest/download/AlquilerEquipos-macOS.zip) | Al abrirlo aparece la app *AlquilerEquipos*; doble clic sobre ella |
+| macOS (Apple Silicon, M1 en adelante) | [**AlquilerEquipos-macOS.dmg**](https://github.com/moreno-stack/AlquilerEquipos/releases/latest/download/AlquilerEquipos-macOS.dmg) | Al abrirlo aparece la app *AlquilerEquipos*; doble clic sobre ella |
 
 Todas las versiones están en [Releases](https://github.com/moreno-stack/AlquilerEquipos/releases).
+
+**Activar la IA en la app descargada:** entre como administrador y pulse **Conectar IA** (barra inferior). Pegue su clave de Groq y pulse *Probar y conectar*: la aplicación la prueba con una llamada real, la guarda en la carpeta `.alquiler_equipos` de su usuario y activa la IA sin reiniciar. Solo se hace una vez por computador.
 
 La aplicación no está firmada con un certificado de pago, así que la primera vez el sistema avisa:
 
@@ -301,14 +303,14 @@ El flujo [`.github/workflows/descargas.yml`](.github/workflows/descargas.yml) ha
 1. corre las pruebas en Linux;
 2. construye la aplicación en Windows y en macOS con este mismo spec, usando el ícono del logo que genera `scripts/generar_iconos.py`;
 3. verifica cada ejecutable con `--autoprueba`;
-4. en Windows arma un solo `AlquilerEquipos.exe` con `--un-archivo`, y en macOS comprime la app `AlquilerEquipos.app`;
-5. publica `AlquilerEquipos-Windows.exe` y `AlquilerEquipos-macOS.zip` en *Releases*.
+4. en Windows arma un solo `AlquilerEquipos.exe` con `--un-archivo`, y en macOS un `.dmg` que contiene solo `AlquilerEquipos.app`;
+5. borra las Releases anteriores y publica `AlquilerEquipos-Windows.exe` y `AlquilerEquipos-macOS.dmg`.
 
 No hay que crear etiquetas: **cada `git push` a `main` construye y publica la Release** `v<versión>` (la versión sale de `alquiler/__init__.py`). Si esa Release ya existe, se reemplazan sus archivos. Para sacar una versión nueva basta con cambiar `__version__`, por ejemplo a `"0.2.0"`, y hacer push.
 
 Al cabo de unos 15 minutos los archivos aparecen en la página *Releases* del repositorio. También se puede lanzar a mano en *Actions → Descargas → Run workflow*. Los cambios que solo tocan documentación (`.md`) no reconstruyen.
 
-**Activar la IA en la versión descargada:** cree un archivo `alquiler.env` con la línea `GROQ_API_KEY=su_clave` (puede copiar `alquiler.env.ejemplo` de este repositorio). En Windows póngalo junto a `AlquilerEquipos.exe`; en macOS, en la carpeta `~/.alquiler_equipos`.
+**Activar la IA en la versión descargada:** use el botón **Conectar IA** (ver arriba). También sirve un archivo `alquiler.env` con `GROQ_API_KEY=su_clave` en la carpeta `.alquiler_equipos` del usuario.
 
 ## 9. Estructura del proyecto
 
