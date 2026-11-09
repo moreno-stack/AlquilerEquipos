@@ -93,6 +93,32 @@ def leer_archivo_env(ruta: Path) -> dict[str, str]:
     return datos
 
 
+CARPETA_USUARIO = Path.home() / ".alquiler_equipos"
+
+
+def guardar_clave(clave: str, carpeta: Path = CARPETA_USUARIO) -> Path:
+    """Guarda (o reemplaza) GROQ_API_KEY en ``carpeta/alquiler.env`` sin tocar las demás líneas.
+
+    La carpeta por defecto es la del usuario: sirve igual para el .exe de un solo archivo, la
+    app de macOS o el código fuente, y no queda dentro de ningún repositorio.
+    """
+    clave = (clave or "").strip()
+    if not clave or any(c.isspace() for c in clave):
+        raise ValueError("La clave de Groq no puede estar vacía ni tener espacios o saltos de línea.")
+    ruta = carpeta / NOMBRE_ARCHIVO_ENV
+    lineas = ruta.read_text(encoding="utf-8").splitlines() if ruta.is_file() else []
+    nueva = f"GROQ_API_KEY={clave}"
+    for i, linea in enumerate(lineas):
+        if linea.lstrip("\ufeff").strip().startswith("GROQ_API_KEY="):
+            lineas[i] = nueva
+            break
+    else:
+        lineas.append(nueva)
+    carpeta.mkdir(parents=True, exist_ok=True)
+    ruta.write_text("\n".join(lineas) + "\n", encoding="utf-8")
+    return ruta
+
+
 def buscar_archivo_env() -> Path | None:
     for carpeta in _CARPETAS_ENV:
         ruta = carpeta / NOMBRE_ARCHIVO_ENV

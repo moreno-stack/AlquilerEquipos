@@ -168,3 +168,29 @@ def test_comentario_al_final_de_la_linea(tmp_path):
 def test_ruta_de_base_expande_la_carpeta_personal():
     cfg = cargar_config({"ALQUILER_DB_PATH": "~/datos/alq.db"}, archivo=False)
     assert cfg.db_path == Path.home() / "datos" / "alq.db"
+
+
+# ---------------------------------------------------------------- guardar la clave desde la app
+def test_guardar_clave_crea_el_archivo(tmp_path):
+    from alquiler.config import guardar_clave, leer_archivo_env
+    ruta = guardar_clave("  gsk_abc123  ", tmp_path / "nueva")
+    assert ruta == tmp_path / "nueva" / "alquiler.env"
+    assert leer_archivo_env(ruta)["GROQ_API_KEY"] == "gsk_abc123"
+
+
+def test_guardar_clave_reemplaza_y_conserva_lo_demas(tmp_path):
+    from alquiler.config import guardar_clave, leer_archivo_env
+    ruta = tmp_path / "alquiler.env"
+    ruta.write_text("# comentario\nGROQ_API_KEY=vieja\nALQUILER_FACTOR_MORA=2\n", encoding="utf-8")
+    guardar_clave("gsk_nueva", tmp_path)
+    datos = leer_archivo_env(ruta)
+    assert datos == {"GROQ_API_KEY": "gsk_nueva", "ALQUILER_FACTOR_MORA": "2"}
+    assert ruta.read_text(encoding="utf-8").startswith("# comentario\n")
+
+
+@pytest.mark.parametrize("clave", ["", "   ", "gsk_a\nALQUILER_DB_PATH=/x", "gsk a b"])
+def test_guardar_clave_invalida(tmp_path, clave):
+    from alquiler.config import guardar_clave
+    with pytest.raises(ValueError):
+        guardar_clave(clave, tmp_path)
+    assert not (tmp_path / "alquiler.env").exists()
