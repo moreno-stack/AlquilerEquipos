@@ -8,6 +8,7 @@ from datetime import datetime
 
 from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtWidgets import (
+    QDialog,
     QFrame,
     QGridLayout,
     QHBoxLayout,
@@ -24,6 +25,7 @@ from PySide6.QtWidgets import (
 
 from alquiler import __version__
 from alquiler.ui import animacion, iconos, logo, tema, trabajador, widgets
+from alquiler.ui.logica import ia
 from alquiler.ui.logica.contexto import Contexto
 from alquiler.ui.logica.navegacion import secciones_para
 
@@ -86,6 +88,9 @@ class VentanaPrincipal(QMainWindow):
                             else widgets.Insignia("IA: sin clave (consultas predefinidas)"))
         self.statusBar().addPermanentWidget(self.etiqueta_usuario)
         self.statusBar().addPermanentWidget(self.etiqueta_ia)
+        self.boton_conectar_ia = widgets.boton("Conectar IA", "primario", self._conectar_ia)
+        self.statusBar().addPermanentWidget(self.boton_conectar_ia)
+        self.boton_conectar_ia.setVisible(ia.puede_conectar_ia(ctx) and not ia.ia_disponible(ctx))
 
         self.lista.currentItemChanged.connect(self._al_cambiar)
         self.cerro_sesion = False
@@ -149,6 +154,16 @@ class VentanaPrincipal(QMainWindow):
         envoltura.setContentsMargins(12, 8, 12, 0)
         envoltura.addWidget(panel)
         return contenedor
+
+    def _conectar_ia(self) -> None:
+        """Pide la clave de Groq, la prueba y deja la IA activa sin reiniciar."""
+        from alquiler.ui.dialogo_ia import DialogoConectarIA
+        if DialogoConectarIA(self.ctx, self).exec() != QDialog.DialogCode.Accepted:
+            return
+        self.etiqueta_ia.set_valor("IA: Groq conectada", "marca")
+        self.etiqueta_estado_ia.setText("Conectada")
+        animacion.llenar(self.barra_ia, 100)
+        self.boton_conectar_ia.hide()
 
     def _marcar_actualizacion(self) -> None:
         self.etiqueta_actualizacion.setText(datetime.now().strftime("%H:%M:%S"))
