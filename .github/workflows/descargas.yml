@@ -46,7 +46,7 @@ jobs:
             opciones: --un-archivo
           - nombre: macOS
             so: macos-latest     # Apple Silicon (M1 en adelante)
-            archivo: AlquilerEquipos-macOS.zip       # la app comprimida: al abrirlo queda la app
+            archivo: AlquilerEquipos-macOS.dmg       # un solo archivo: al abrirlo aparece la app
             opciones: ""
     runs-on: ${{ matrix.so }}
     env:
@@ -75,9 +75,12 @@ jobs:
         shell: pwsh
         run: Copy-Item dist\AlquilerEquipos.exe ${{ matrix.archivo }}
 
-      - name: Aplicación de macOS (.app comprimida)
+      - name: Aplicación de macOS (.dmg con la app y nada más)
         if: runner.os == 'macOS'
-        run: ditto -c -k --sequesterRsrc --keepParent dist/AlquilerEquipos.app ${{ matrix.archivo }}
+        run: |
+          mkdir -p dmg
+          cp -R dist/AlquilerEquipos.app dmg/
+          hdiutil create -volname "Alquiler de Equipos" -srcfolder dmg -ov -format UDZO ${{ matrix.archivo }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -94,6 +97,27 @@ jobs:
       - name: Leer la versión
         id: version
         run: echo "valor=$(python3 -c 'import re;print(re.search(r"__version__ = \"(.+?)\"", open("alquiler/__init__.py").read()).group(1))')" >> "$GITHUB_OUTPUT"
+
+      - name: Borrar las descargas viejas
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          actual="v${{ steps.version.outputs.valor }}"
+          # Releases de versiones anteriores (con sus .zip, .dmg o instaladores): se borran.
+          for tag in $(gh release list -R "$GITHUB_REPOSITORY" --limit 100 --json tagName -q '.[].tagName'); do
+            if [ "$tag" != "$actual" ]; then
+              gh release delete "$tag" -R "$GITHUB_REPOSITORY" --yes --cleanup-tag
+            fi
+          done
+          # En la Release actual solo quedan los dos archivos de la aplicación.
+          if gh release view "$actual" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            for archivo in $(gh release view "$actual" -R "$GITHUB_REPOSITORY" --json assets -q '.assets[].name'); do
+              case "$archivo" in
+                AlquilerEquipos-Windows.exe|AlquilerEquipos-macOS.dmg) ;;
+                *) gh release delete-asset "$actual" "$archivo" -R "$GITHUB_REPOSITORY" --yes ;;
+              esac
+            done
+          fi
 
       - uses: actions/download-artifact@v4
         with:
@@ -114,10 +138,13 @@ jobs:
             | Sistema | Archivo | Qué hacer |
             |---|---|---|
             | Windows 10/11 | **AlquilerEquipos-Windows.exe** | Descárguelo y ábralo con doble clic. No se instala nada |
-            | macOS (M1 en adelante) | **AlquilerEquipos-macOS.zip** | Descárguelo y ábralo: aparece la app *AlquilerEquipos*. Ábrala con doble clic |
+            | macOS (M1 en adelante) | **AlquilerEquipos-macOS.dmg** | Ábralo: aparece la app *AlquilerEquipos*. Doble clic sobre ella (o arrástrela a Aplicaciones) |
 
             La primera vez el sistema avisa que la app no está firmada:
             - **Windows:** "Más información" → "Ejecutar de todas formas".
             - **macOS:** clic derecho sobre la app → "Abrir" → "Abrir".
 
             Usuario de prueba: `admin` / `admin1234` (al primer arranque puede cargar datos de demostración).
+
+            **IA:** entre como administrador y pulse **Conectar IA** (abajo a la derecha); pegue su clave
+            de Groq una sola vez y queda guardada en ese computador.
