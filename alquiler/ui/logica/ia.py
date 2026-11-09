@@ -1,11 +1,19 @@
 """Lógica de presentación del módulo de IA: tarjetas explicables y consola."""
 
+import dataclasses
+
+from alquiler import config as configuracion
 from alquiler.ai import consultas
+from alquiler.ai.llm import crear_cliente
 from alquiler.ai.demanda import predecir_demanda
 from alquiler.ai.mantenimiento import recomendar_mantenimiento
 from alquiler.ai.resultado import Resultado
 from alquiler.ai.retrasos import analizar_retrasos
+from alquiler.errors import PermisoDenegado, ReglaNegocioError
+from alquiler.probar_ia import probar_ia
 from alquiler.ui.logica.contexto import Contexto
+
+CARPETA_CLAVE = configuracion.CARPETA_USUARIO
 
 PREDEFINIDAS: list[tuple[str, str]] = [(c.id, c.titulo) for c in consultas.CONSULTAS_PREDEFINIDAS]
 TITULO_ESTADO = {
@@ -68,6 +76,35 @@ def retrasos(ctx: Contexto) -> dict:
 # ---------------------------------------------------------------- consola
 def ia_disponible(ctx: Contexto) -> bool:
     return ctx.cliente_llm is not None
+
+
+def puede_conectar_ia(ctx: Contexto) -> bool:
+    return ctx.puede("usuarios.gestionar")  # la clave es del sistema: solo el administrador
+
+
+def conectar_ia(ctx: Contexto, clave: str) -> str:
+    """Prueba la clave con una llamada real; si responde, la guarda y activa la IA ya mismo.
+
+    La clave queda en la carpeta del usuario (``~/.alquiler_equipos/alquiler.env``), así que la
+    app descargada (un solo .exe o la app de macOS) la encuentra en cada arranque.
+    """
+    if not puede_conectar_ia(ctx):
+        raise PermisoDenegado("Solo un administrador puede conectar la IA.")
+    clave = (clave or "").strip()
+    if not clave:
+        raise ReglaNegocioError("Pegue la clave de Groq (empieza por gsk_).")
+    nueva = dataclasses.replace(ctx.config, groq_api_key=clave, origen_clave="la aplicación")
+    mensajes: list[str] = []
+    if probar_ia(nueva, imprimir=mensajes.append) != 0:
+        detalle = mensajes[-1] if mensajes else "La IA no respondió."
+        raise ReglaNegocioError(detalle.replace("IA NO DISPONIBLE: ", ""))
+    try:
+        configuracion.guardar_clave(clave, CARPETA_CLAVE)
+    except (ValueError, OSError) as e:
+        raise ReglaNegocioError(f"La clave funciona, pero no se pudo guardar: {e}") from None
+    ctx.config = nueva
+    ctx.cliente_llm = crear_cliente(nueva)
+    return mensajes[-1] if mensajes else "IA conectada."
 
 
 def _respuesta(r: consultas.RespuestaConsulta) -> dict:
